@@ -13,6 +13,7 @@ HTML_CONTROLLER = """
     <div>
         <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd DJ</span>
         <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ИНТЕРАКТИВТІ БАСҚАРУ</h1>
+        <p class="text-xs text-gray-400 mt-1">Әнді де, суретті де бір-біріне кедергісіз бөлек жібере беріңіз!</p>
     </div>
 
     <div class="bg-slate-900/40 border border-slate-800/60 p-3 rounded-2xl">
@@ -58,7 +59,6 @@ HTML_CONTROLLER = """
     </div>
 
     <script>
-        // 🧠 ЖАҢА ФУНКЦИЯ: Төбедегі әнді басқанда инпутке автоматты жазу
         function selectSong(songName) {
             document.getElementById('songInput').value = songName;
         }
@@ -82,7 +82,7 @@ HTML_CONTROLLER = """
 
         async function sendPhoto() {
             const photoInput = document.getElementById('photoInput');
-            if(!photoInput.files[0]) return alert("Алдымен suret таңдаңыз!");
+            if(!photoInput.files[0]) return alert("Алдымен сурет таңдаңыз!");
 
             try {
                 const formData = new FormData();
@@ -260,6 +260,13 @@ HTML_DASHBOARD = """
             }
         }
 
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                skipTrack();
+            }
+        });
+
         function skipTrack() {
             audioPlayer.onended = null; 
             audioPlayer.pause();
@@ -348,3 +355,4 @@ HTML_DASHBOARD = """
     </script>
 </body>
 </html>
+"""
