@@ -18,36 +18,40 @@ HTML_CONTROLLER = """
 
     <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-4 my-auto shadow-xl">
         <h3 class="text-xs font-bold text-fuchsia-400 uppercase text-left">🎼 Ән немесе Автор аты:</h3>
-        <div class="flex flex-col gap-3">
-            <input type="text" id="songInput" placeholder="Мысалы: Шашлындос, Пломбир, Ворона" 
+        <form onsubmit="sendVote(event)" class="flex flex-col gap-3">
+            <input type="text" id="songInput" placeholder="Мысалы: Шашлындос, Пломбир, Ворона" required
                    class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400">
-            <button onclick="sendSong()" class="w-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-black font-black py-3 rounded-xl text-sm">
+            <button type="submit" class="w-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-black font-black py-3 rounded-xl text-sm">
                 👍 ДАУЫС БЕРУ (VOTE)
             </button>
-        </div>
+        </form>
     </div>
 
     <div class="bg-black/30 p-2 rounded-xl border border-white/5">
-        <div id="status" class="text-emerald-400 text-[10px] font-bold">Байланыс орнатылуда...</div>
+        <div class="text-emerald-400 text-[10px] font-bold">БАЙЛАНЫС: 100% ҚАУІПСІЗ СЕРВЕР 🌐</div>
     </div>
 
     <script>
-        // ⚠️ РЕНДЕР СЕРВЕРІНЕ ТУРА БАЙЛАНЫС ОРНАТУ (ҚАТЕСІЗ АВТОМАТТЫ АНЫҚТАУ)
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
-
-        ws.onopen = () => { document.getElementById('status').innerText = "БАЙЛАНЫС: БЕЛСЕНДІ 🌐"; };
-        ws.onclose = () => { document.getElementById('status').innerText = "БАЙЛАНЫС ҮЗІЛДІ ❌"; };
-
-        function sendSong() {
+        async function sendVote(event) {
+            event.preventDefault();
             const input = document.getElementById('songInput');
             const songName = input.value.trim();
-            if (songName && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ "type": "song_vote", "title": songName.toLowerCase() }));
-                input.value = '';
-                alert(`"${songName}" әніне дауыс берілді! 🚀`);
-            } else {
-                alert("Сервермен байланыс жоқ немесе сөз бос!");
+
+            try {
+                const formData = new FormData();
+                formData.append('title', songName);
+
+                const response = await fetch('/vote', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if(result.status === "success") {
+                    alert(`"${songName}" әніне дауыс қабылданды! 🚀`);
+                    input.value = '';
+                }
+            } catch (error) {
+                alert("Қате! Сервер жауап бермеді.");
             }
         }
     </script>
@@ -104,8 +108,8 @@ HTML_DASHBOARD = """
         </div>
 
         <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-3xl text-xs space-y-2 text-gray-300">
-            <p class="text-cyan-400 font-bold text-sm">👑 SMART RANKING SYSTEM:</p>
-            <p>• <strong>Crowdvoting:</strong> Залдағы халық ұнатқан әнін жазады. Кім көп жазса, сол ән алға шығады.</p>
+            <p class="text-cyan-400 font-bold text-sm">👑 SMART HTTP POLLING SYSTEM:</p>
+            <p>• <strong>Safe Connection:</strong> Вебсокетсіз, таза HTTP арқылы істейді. Ешқашан бұғатталмайды.</p>
             <p>• <strong>Автоматты Кезек:</strong> Таймер аяқталғанда, жүйе ең көп дауыс алған әнді папкадан өзі қосады.</p>
         </div>
     </div>
@@ -125,10 +129,6 @@ HTML_DASHBOARD = """
         const phoneUrl = window.location.origin + '/phone';
         new QRCode(document.getElementById("qrcode"), { text: phoneUrl, width: 85, height: 85 });
 
-        // ⚠️ ЭКРАНДАҒЫ ВЕБСОКЕТ ПРОТОКОЛЫН ДА АВТОМАТТЫ ТҮЗЕТУ
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
-
         const djBall = document.getElementById('djBall');
         const ticker = document.getElementById('ticker');
         const currentPlaying = document.getElementById('currentPlaying');
@@ -138,28 +138,46 @@ HTML_DASHBOARD = """
         const bpmText = document.getElementById('bpmText');
         const audioPlayer = document.getElementById('localAudioPlayer');
 
-        let songVotes = {}; 
         let isPlaying = false;
         let beatInterval = null;
         let audioPermissionGranted = false;
+        let currentVotesGlobal = {};
 
         function forceInitAudio() {
             audioPermissionGranted = true;
-            ticker.innerText = "🎵 ДЫБЫС ЖҮЙЕСІ ДАЙЫН! Дауыс беріңіз.";
+            ticker.innerText = "🎵 ДЫБЫС ЖҮЙЕСІ БЕЛСЕНДІ! Дауыс күтуде...";
             ticker.style.color = "#10b981";
         }
 
-        function checkAndPlayWinner() {
-            if (isPlaying) return;
-            let sorted = Object.keys(songVotes).map(key => ({
-                name: key,
-                count: songVotes[key]
-            })).sort((a, b) => b.count - a.count);
+        // 🔄 СЕРВЕРДЕН ДАУЫСТАРДЫ ӘР 1 СЕКУНД САЙЫН АВТОМАТТЫ СУЫРЫП АЛЫП ТҰРУ (POLLING)
+        async function fetchVotes() {
+            try {
+                const response = await fetch('/get_votes');
+                const votes = await response.json();
+                currentVotesGlobal = votes;
+                updateRatingUI(votes);
 
+                if (!isPlaying) {
+                    checkAndPlayWinner(votes);
+                }
+            } catch (e) {
+                console.log("Дерек алу қатесі");
+            }
+        }
+        setInterval(fetchVotes, 1000); // 1 секунд сайын тірілей жаңарту
+
+        function checkAndPlayWinner(votes) {
+            if (isPlaying) return;
+            let sorted = Object.keys(votes).map(key => ({ name: key, count: votes[key] })).sort((a, b) => b.count - a.count);
             if (sorted.length === 0 || sorted[0].count === 0) return;
+
             let winner = sorted[0];
-            songVotes[winner.name] = 0; 
-            updateRatingUI(); 
+
+            // Сервердегі дауысын нөлдеу сұранысы
+            const formData = new FormData();
+            formData.append('song_key', winner.name);
+            fetch('/reset_vote', { method: 'POST', body: formData });
+
             playLocalTrack(winner.name);
         }
 
@@ -168,30 +186,15 @@ HTML_DASHBOARD = """
             let fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
-            if (songKey === "истерика") {
-                fileTarget = encodeURIComponent("Истерика (Джиос)");
-                displayName = "Джиос & Паша - Истерика (Remix)";
-            } else if (songKey === "девочка") {
-                fileTarget = encodeURIComponent("Девочка (Remix)");
-                displayName = "Jah Khu & Ханза - Девочка (Remix)";
-            } else if (songKey === "ворона") {
-                fileTarget = encodeURIComponent("Ворона (Кэнни)");
-                displayName = "Кэнни & МС Дым - Ворона (Remix)";
-            } else if (songKey === "глаза") {
-                fileTarget = encodeURIComponent("Твои глаза (Лейти");
-                displayName = "Leytink & RSXD - Твои глаза (Remix)";
-            } else if (songKey === "любовь") {
-                fileTarget = encodeURIComponent("Все слова о любви");
-                displayName = "Никита & Мария - Все слова о любви";
-            } else if (songKey === "ню") {
-                fileTarget = encodeURIComponent("Не получается (Н");
-                displayName = "НЮ - Не получается (Remix)";
-            } else if (songKey === "пломбир") {
-                fileTarget = encodeURIComponent("Пломбир (RASA)");
-                displayName = "RASA - Пломбир (Remix)";
-            }
+            if (songKey === "истерика") { fileTarget = encodeURIComponent("Истерика (Джиос)"); displayName = "Джиос & Паша - Истерика (Remix)"; }
+            else if (songKey === "девочка") { fileTarget = encodeURIComponent("Девочка (Remix)"); displayName = "Jah Khu & Ханза - Девочка (Remix)"; }
+            else if (songKey === "ворона") { fileTarget = encodeURIComponent("Ворона (Кэнни)"); displayName = "Кэнни & МС Дым - Ворона (Remix)"; }
+            else if (songKey === "глаза") { fileTarget = encodeURIComponent("Твои глаза (Лейти"); displayName = "Leytink & RSXD - Твои глаза (Remix)"; }
+            else if (songKey === "любовь") { fileTarget = encodeURIComponent("Все слова о любви"); displayName = "Никита & Мария - Все слова о любви"; }
+            else if (songKey === "ню") { fileTarget = encodeURIComponent("Не получается (Н"); displayName = "НЮ - Не получается (Remix)"; }
+            else if (songKey === "пломбир") { fileTarget = encodeURIComponent("Пломбир (RASA)"); displayName = "RASA - Пломбир (Remix)"; }
 
-            currentPlaying.innerText = displayName.toUpperCase() + " (ЗАЛДЫҢ ТАНДАУЫ 👑)";
+            currentPlaying.innerText = displayName.toUpperCase() + " (ЗАЛ ТАНДАУЫ 👑)";
             ballStatus.innerText = "LIVE PLAYING";
             bpmText.innerText = "🥁 АКТИВТІ БИТ";
             djBall.style.backgroundColor = '#06b6d4';
@@ -201,7 +204,7 @@ HTML_DASHBOARD = """
             audioPlayer.load();
 
             if (audioPermissionGranted) {
-                audioPlayer.play().catch(e => console.log("Дыбыс қатесі:", e));
+                audioPlayer.play().catch(e => console.log("Дыбыс қатесі"));
             }
 
             if (beatInterval) clearInterval(beatInterval);
@@ -214,26 +217,19 @@ HTML_DASHBOARD = """
             timerText.innerText = `⏳ Ремикс уақыты: ${timeLeft} сек`;
             let countdown = setInterval(() => {
                 timeLeft--;
-                if (timeLeft > 0 && isPlaying) {
-                    timerText.innerText = `⏳ Ремикс уақыты: ${timeLeft} сек`;
-                } else {
-                    clearInterval(countdown);
-                }
+                if (timeLeft > 0 && isPlaying) { timerText.innerText = `⏳ Ремикс уақыты: ${timeLeft} сек`; } 
+                else { clearInterval(countdown); }
             }, 1000);
 
             setTimeout(() => {
                 clearInterval(beatInterval);
                 audioPlayer.pause();
                 isPlaying = false;
-                checkAndPlayWinner(); 
             }, 20000);
         }
 
-        function updateRatingUI() {
-            let sortedSongs = Object.keys(songVotes).map(key => ({
-                name: key,
-                count: songVotes[key]
-            })).filter(s => s.count > 0).sort((a, b) => b.count - a.count);
+        function updateRatingUI(votes) {
+            let sortedSongs = Object.keys(votes).map(key => ({ name: key, count: votes[key] })).filter(s => s.count > 0).sort((a, b) => b.count - a.count);
 
             if (sortedSongs.length === 0) {
                 ratingList.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">Кезек бос... 🎼</p>`;
@@ -257,32 +253,6 @@ HTML_DASHBOARD = """
                     </div>`;
             });
         }
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === "song_vote") {
-                let title = data.title.toLowerCase().trim();
-                let finalKey = "шашлындос";
-                if (title.includes("истерика") || title.includes("джиос")) finalKey = "истерика";
-                else if (title.includes("девочка") || title.includes("ханза")) finalKey = "девочка";
-                else if (title.includes("ворона") || title.includes("кэнни")) finalKey = "ворона";
-                else if (title.includes("глаза") || title.includes("твои")) finalKey = "глаза";
-                else if (title.includes("любовь") || title.includes("слова")) finalKey = "любовь";
-                else if (title.includes("ню") || title.includes("получается")) finalKey = "ню";
-                else if (title.includes("пломбир") || title.includes("раса")) finalKey = "пломбир";
-                else if (title.includes("шашлы") || title.includes("хлеб")) finalKey = "шашлындос";
-
-                if (!songVotes[finalKey]) songVotes[finalKey] = 0;
-                songVotes[finalKey]++; 
-
-                ticker.innerText = `⚡ ЖАҢА ДАУЫС КЕЛДІ: "${title.toUpperCase()}"`;
-                updateRatingUI();
-
-                if (!isPlaying) {
-                    checkAndPlayWinner();
-                }
-            }
-        };
     </script>
 </body>
 </html>
