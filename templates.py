@@ -213,7 +213,6 @@ HTML_DASHBOARD = """
         }
 
         function playLocalTrack(songKey) {
-            // 🧠 ПАПКАДАҒЫ ФАЙЛ АТТАРЫМЕН ТУРА 100% СИНХРОНДАУ (ҚАТЕСІЗ)
             let fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
@@ -230,11 +229,11 @@ HTML_DASHBOARD = """
                 displayName = "Кэнни - Ворона"; 
             }
             else if (songKey === "глаза") { 
-                fileTarget = encodeURIComponent("Tвои глаза (Лейтинк)"); // 🛠️ ТҮЗЕТІЛДІ: Тұра сенің папкаңдағыдай!
+                fileTarget = encodeURIComponent("Твои глаза (Лейтинк)"); 
                 displayName = "Лейтинк - Твои глаза"; 
             }
             else if (songKey === "ню") { 
-                fileTarget = encodeURIComponent("Не получается (НЮ)"); // 🛠️ ТҮЗЕТІЛДІ: Бас әріппен НЮ!
+                fileTarget = encodeURIComponent("Не получается (НЮ)"); 
                 displayName = "НЮ - Не получается"; 
             }
             else if (songKey === "пломбир") { 
@@ -242,7 +241,7 @@ HTML_DASHBOARD = """
                 displayName = "RASA - Пломбир"; 
             }
             else if (songKey === "любовь") { 
-                fileTarget = encodeURIComponent("Все слова о любви"); // 🛠️ ЖАҢАДАН ҚОСЫЛДЫ: Папкаңдағы бесінші ән!
+                fileTarget = encodeURIComponent("Все слова о любви"); 
                 displayName = "Никита & Мария - Все слова о любви"; 
             }
 
@@ -255,13 +254,12 @@ HTML_DASHBOARD = """
             audioPlayer.src = window.location.origin + "/static/" + fileTarget + ".mp3";
             audioPlayer.load();
 
-            // 🛡️ САҚТАНДЫРҒЫШ: Егер файл бәрібір табылмаса, келесі әнді автоматты іске қосады
             let playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
                     console.log("Ойнап жатыр");
                 }).catch(error => {
-                    console.log("Файл аты қате, келесі әнге өтеміз...");
+                    console.log("Қателік, келесі әнге өтеміз...");
                     isPlaying = false;
                     skipTrack(); 
                 });
@@ -305,3 +303,4 @@ HTML_DASHBOARD = """
     </script>
 </body>
 </html>
+"""

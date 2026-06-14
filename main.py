@@ -7,11 +7,12 @@ from templates import HTML_DASHBOARD, HTML_CONTROLLER
 
 app = FastAPI()
 
+# mp3 файлдар тұрған статикалық папканы жалғау
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Әндердің кезегін сақтайтын база
+# Әндердің резервтік кезегін (Queue) сақтайтын орталық база
 live_queue = {
-    "queue": [],
+    "queue": [],  # Телефоннан келген әндер осы тізімге ретімен жиналады
     "total_clicks": 0,
     "истерика": 0,
     "девочка": 0,
@@ -34,7 +35,7 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 📱 Телефоннан ән қабылдау
+# 📱 Телефоннан ән келгенде оны тізімнің соңына қосамыз
 @app.post("/vote")
 def text_vote(title: str = Form(...)):
     clean_title = title.lower().strip()
@@ -57,6 +58,7 @@ def text_vote(title: str = Form(...)):
     elif "шашлы" in clean_title or "хлеб" in clean_title:
         final_key = "шашлындос"
 
+    # Кезекке (резервке) қосу
     live_queue["queue"].append(final_key)
     live_queue["total_clicks"] += 1
     live_queue[final_key] += 1
@@ -64,13 +66,13 @@ def text_vote(title: str = Form(...)):
     return JSONResponse(content={"status": "success", "matched": final_key})
 
 
-# 🖥️ Ноутбукке кезекті көрсетіп тұру
+# 🖥️ Ноутбук экранына бүкіл кезекті көрсетіп тұру
 @app.get("/get_votes")
 def get_votes():
     return JSONResponse(content=live_queue)
 
 
-# ⏭️ БРАУЗЕР ҮШІН ЕҢ СЕНІМДІ GET СҰРАНЫСЫНА АУЫСТЫРДЫҚ
+# ⏭️ Кезектегі бірінші әнді суырып алу (GET арқылы тұрақты жұмыс істейді)
 @app.get("/pop_queue")
 def pop_queue():
     if len(live_queue["queue"]) > 0:
