@@ -6,63 +6,80 @@ HTML_CONTROLLER = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taldyk Summer - Ән мен Фото</title>
+    <title>Taldyk Summer - Бөлек Жіберу</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="h-screen bg-slate-950 text-white flex flex-col justify-between p-6 text-center select-none overflow-hidden">
     <div>
         <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd DJ</span>
-        <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ӘН ЖӘНЕ СЕЛФИ ЖІБЕРУ</h1>
-        <p class="text-xs text-gray-400 mt-2">Папкадағы хиттер: Ворона, Шашлындос, Девочка, Истерика, Не получается, Пломбир, Твои глаза, Все слова о любви.</p>
+        <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ИНТЕРАКТИВТІ БАСҚАРУ</h1>
+        <p class="text-xs text-gray-400 mt-1">Әнді де, суретті де бір-біріне кедергісіз бөлек жібере беріңіз!</p>
     </div>
 
-    <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-4 my-auto shadow-xl">
-        <form onsubmit="sendVote(event)" class="flex flex-col gap-4 text-left">
-            <div>
-                <label class="text-xs font-bold text-fuchsia-400 uppercase block mb-1">🎼 Ән аты:</label>
-                <input type="text" id="songInput" placeholder="Мысалы: Шашлындос, Пломбир" required
-                       class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400">
+    <div class="space-y-4 my-auto">
+        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl">
+            <h3 class="text-xs font-bold text-fuchsia-400 uppercase text-left">🎼 1. Ән таңдау:</h3>
+            <div class="flex gap-2">
+                <input type="text" id="songInput" placeholder="Шашлындос, Ворона, Истерика..." 
+                       class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fuchsia-400">
+                <button onclick="sendSong()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-black font-black px-4 rounded-xl text-xs uppercase tracking-wider">
+                    ҚОСУ
+                </button>
             </div>
+        </div>
 
-            <div>
-                <label class="text-xs font-bold text-cyan-400 uppercase block mb-1">📸 Залдан фото (Селфи - Міндетті емес):</label>
+        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl">
+            <h3 class="text-xs font-bold text-cyan-400 uppercase text-left">📸 2. Залдан Селфи (Фото):</h3>
+            <div class="flex flex-col gap-2">
                 <input type="file" id="photoInput" accept="image/*"
                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs text-gray-400 focus:outline-none">
+                <button onclick="sendPhoto()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-black py-2 rounded-xl text-xs uppercase tracking-wider">
+                    📸 ЭКРАНҒА СУРЕТТІ ҰШЫРУ
+                </button>
             </div>
-
-            <button type="submit" class="w-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-black font-black py-3 rounded-xl text-sm mt-2">
-                🚀 КЕЗЕККЕ + ФОТО ЖІБЕРУ
-            </button>
-        </form>
+        </div>
     </div>
 
     <div class="bg-black/30 p-2 rounded-xl border border-white/5">
-        <div class="text-emerald-400 text-[10px] font-bold">БАЙЛАНЫС: СЕРВЕРГЕ ҚОСЫЛЫП ТҰР 🌐</div>
+        <div class="text-emerald-400 text-[10px] font-bold">ЖҮЙЕ ДАЙЫН СЕРВЕР ТІРІ 🌐</div>
     </div>
 
     <script>
-        async function sendVote(event) {
-            event.preventDefault();
-            const input = document.getElementById('songInput');
-            const photoInput = document.getElementById('photoInput');
+        // Тек ән жіберу функциясы
+        async function sendSong() {
+            const songInput = document.getElementById('songInput');
+            if(!songInput.value.trim()) return alert("Ән атын жазыңыз!");
 
             try {
                 const formData = new FormData();
-                formData.append('title', input.value.trim());
-                if(photoInput.files[0]) {
-                    formData.append('photo', photoInput.files[0]);
-                }
+                formData.append('title', songInput.value.trim());
 
                 const response = await fetch('/vote', { method: 'POST', body: formData });
                 const result = await response.json();
                 if(result.status === "success") {
-                    alert("Ән мен Сурет сәтті жіберілді! 🚀");
-                    input.value = '';
+                    alert(`"${songInput.value}" кезекке резервке қосылды! 🎵`);
+                    songInput.value = '';
+                }
+            } catch (error) { alert("Сервер жауап бермеді."); }
+        }
+
+        // Тек сурет жіберу функциясы
+        async function sendPhoto() {
+            const photoInput = document.getElementById('photoInput');
+            if(!photoInput.files[0]) return alert("Алдымен сурет таңдаңыз немесе селфи түсіріңіз!");
+
+            try {
+                const formData = new FormData();
+                formData.append('title', ''); // Әнді бос жібереміз
+                formData.append('photo', photoInput.files[0]);
+
+                const response = await fetch('/vote', { method: 'POST', body: formData });
+                const result = await response.json();
+                if(result.status === "success") {
+                    alert("Фото экрандағы слайдерге сәтті ұшырылды! 📸✨");
                     photoInput.value = '';
                 }
-            } catch (error) {
-                alert("Қате! Сервер жауап бермеді.");
-            }
+            } catch (error) { alert("Сервер жауап бермеді."); }
         }
     </script>
 </body>
@@ -86,7 +103,7 @@ HTML_DASHBOARD = """
 
     <header class="w-full flex justify-between items-center border-b border-slate-800 pb-4">
         <div>
-            <span class="text-xs font-bold text-cyan-400 tracking-widest uppercase">Smart Playlist Manager v11</span>
+            <span class="text-xs font-bold text-cyan-400 tracking-widest uppercase">Smart Playlist Manager v12</span>
             <h1 class="text-2xl font-black tracking-wider text-white">TALDYK SUMMER <span class="text-fuchsia-500">LIVE SCREEN</span></h1>
         </div>
         <div class="bg-slate-900 border border-cyan-500/30 px-4 py-2 rounded-xl text-center">
@@ -130,12 +147,12 @@ HTML_DASHBOARD = """
     </div>
 
     <footer class="w-full border-t border-slate-800 pt-4 flex justify-between items-center bg-slate-950 p-4 rounded-2xl">
-        <div class="text-[10px] text-gray-400">TALDYK SUMMER PHOTO & QUEUE SYSTEM v11</div>
+        <div class="text-[10px] text-gray-400">TALDYK SUMMER PHOTO & QUEUE SYSTEM v12</div>
         <div class="bg-white p-2 rounded-2xl flex items-center gap-4 text-black shadow-lg">
             <div id="qrcode" class="p-1 bg-white rounded-lg"></div>
             <div class="text-left pr-4">
-                <h4 class="text-xs font-black uppercase tracking-wide text-slate-950">Өз әніңді + фото жаз</h4>
-                <p class="text-[9px] text-gray-600 mt-0.5 leading-tight">Камерамен сканерле де, резервке қос!</p>
+                <h4 class="text-xs font-black uppercase tracking-wide text-slate-950">БАСҚАРУ МЕН СЕЛФИ</h4>
+                <p class="text-[9px] text-gray-600 mt-0.5 leading-tight">Сканерле де, әнді немесе фотоны бөлек жібер!</p>
             </div>
         </div>
     </footer>
@@ -198,7 +215,6 @@ HTML_DASHBOARD = """
             liveImageDisplay.classList.remove('hidden');
         }
 
-        // 🔄 Суреттерді әр 3 секунд сайын автоматты ауыстырып тұратын слайдер
         setInterval(() => {
             if (globalPhotos.length > 0) {
                 currentPhotoIndex = (currentPhotoIndex + 1) % globalPhotos.length;
@@ -224,7 +240,6 @@ HTML_DASHBOARD = """
                     isPlaying = false;
                 }
             } catch(err) {
-                console.log("Кезек алу қатесі");
                 isPlaying = false;
             }
         }
@@ -252,34 +267,13 @@ HTML_DASHBOARD = """
             let fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
-            if (songKey === "истерика") { 
-                fileTarget = encodeURIComponent("Истерика (Джиос)"); 
-                displayName = "Джиос - Истерика"; 
-            }
-            else if (songKey === "девочка") { 
-                fileTarget = encodeURIComponent("Девочка (Remix)"); 
-                displayName = "Ханза - Девочка (Remix)"; 
-            }
-            else if (songKey === "ворона") { 
-                fileTarget = encodeURIComponent("Ворона (Кэнни)"); 
-                displayName = "Кэнни - Ворона"; 
-            }
-            else if (songKey === "глаза") { 
-                fileTarget = encodeURIComponent("Твои глаза (Лейтинк)"); 
-                displayName = "Лейтинк - Твои глаза"; 
-            }
-            else if (songKey === "ню") { 
-                fileTarget = encodeURIComponent("Не получается (НЮ)"); 
-                displayName = "НЮ - Не получается"; 
-            }
-            else if (songKey === "пломбир") { 
-                fileTarget = encodeURIComponent("Пломбир (RASA)"); 
-                displayName = "RASA - Пломбир"; 
-            }
-            else if (songKey === "любовь") { 
-                fileTarget = encodeURIComponent("Все слова о любви"); 
-                displayName = "Никита & Мария - Все слова о любви"; 
-            }
+            if (songKey === "истерика") { fileTarget = encodeURIComponent("Истерика (Джиос)"); displayName = "Джиос - Истерика"; }
+            else if (songKey === "девочка") { fileTarget = encodeURIComponent("Девочка (Remix)"); displayName = "Ханза - Девочка (Remix)"; }
+            else if (songKey === "ворона") { fileTarget = encodeURIComponent("Ворона (Кэнни)"); displayName = "Кэнни - Ворона"; }
+            else if (songKey === "глаза") { fileTarget = encodeURIComponent("Твои глаза (Лейтинк)"); displayName = "Лейтинк - Твои глаза"; }
+            else if (songKey === "ню") { fileTarget = encodeURIComponent("Не получается (НЮ)"); displayName = "НЮ - Не получается"; }
+            else if (songKey === "пломбир") { fileTarget = encodeURIComponent("Пломбир (RASA)"); displayName = "RASA - Пломбир"; }
+            else if (songKey === "любовь") { fileTarget = encodeURIComponent("Все слова о любви"); displayName = "Никита & Мария - Все слова о любви"; }
 
             currentPlaying.innerText = displayName.toUpperCase();
             ballStatus.innerText = "LIVE PLAYING";
@@ -295,7 +289,6 @@ HTML_DASHBOARD = """
                 playPromise.then(_ => {
                     console.log("Ойнап жатыр");
                 }).catch(error => {
-                    console.log("Қателік, келесі әнге өтеміз...");
                     isPlaying = false;
                     skipTrack(); 
                 });
