@@ -13,14 +13,27 @@ HTML_CONTROLLER = """
     <div>
         <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd DJ</span>
         <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ИНТЕРАКТИВТІ БАСҚАРУ</h1>
-        <p class="text-xs text-gray-400 mt-1">Әнді де, суретті де бір-біріне кедергісіз бөлек жібере беріңіз!</p>
+    </div>
+
+    <div class="bg-slate-900/40 border border-slate-800/60 p-3 rounded-2xl">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block text-left mb-2">✨ Папкадағы дайын әндер (Басыңыз):</span>
+        <div class="flex flex-wrap gap-2 justify-start">
+            <button onclick="selectSong('Шашлындос')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🍖 Шашлындос</button>
+            <button onclick="selectSong('Истерика')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">😭 Истерика</button>
+            <button onclick="selectSong('Ворона')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🦅 Ворона</button>
+            <button onclick="selectSong('Твои глаза')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">👀 Твои глаза</button>
+            <button onclick="selectSong('Не получается')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">💔 Не получается</button>
+            <button onclick="selectSong('Пломбир')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🍦 Пломбир</button>
+            <button onclick="selectSong('Девочка')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">💃 Девочка</button>
+            <button onclick="selectSong('Все слова о любви')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">❤️ Слова о любви</button>
+        </div>
     </div>
 
     <div class="space-y-4 my-auto">
         <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl">
             <h3 class="text-xs font-bold text-fuchsia-400 uppercase text-left">🎼 1. Ән таңдау:</h3>
             <div class="flex gap-2">
-                <input type="text" id="songInput" placeholder="Шашлындос, Ворона, Истерика..." 
+                <input type="text" id="songInput" placeholder="Жоғарыдан таңдаңыз немесе жазыңыз..." 
                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fuchsia-400">
                 <button onclick="sendSong()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-black font-black px-4 rounded-xl text-xs uppercase tracking-wider">
                     ҚОСУ
@@ -45,7 +58,11 @@ HTML_CONTROLLER = """
     </div>
 
     <script>
-        // Тек ән жіберу функциясы
+        // 🧠 ЖАҢА ФУНКЦИЯ: Төбедегі әнді басқанда инпутке автоматты жазу
+        function selectSong(songName) {
+            document.getElementById('songInput').value = songName;
+        }
+
         async function sendSong() {
             const songInput = document.getElementById('songInput');
             if(!songInput.value.trim()) return alert("Ән атын жазыңыз!");
@@ -63,14 +80,13 @@ HTML_CONTROLLER = """
             } catch (error) { alert("Сервер жауап бермеді."); }
         }
 
-        // Тек сурет жіберу функциясы
         async function sendPhoto() {
             const photoInput = document.getElementById('photoInput');
-            if(!photoInput.files[0]) return alert("Алдымен сурет таңдаңыз немесе селфи түсіріңіз!");
+            if(!photoInput.files[0]) return alert("Алдымен suret таңдаңыз!");
 
             try {
                 const formData = new FormData();
-                formData.append('title', ''); // Әнді бос жібереміз
+                formData.append('title', ''); 
                 formData.append('photo', photoInput.files[0]);
 
                 const response = await fetch('/vote', { method: 'POST', body: formData });
@@ -332,4 +348,3 @@ HTML_DASHBOARD = """
     </script>
 </body>
 </html>
-"""
