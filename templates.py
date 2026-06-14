@@ -13,7 +13,7 @@ HTML_CONTROLLER = """
     <div>
         <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd AI DJ</span>
         <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ӘНГЕ ДАУЫС БЕРУ</h1>
-        <p class="text-xs text-gray-400 mt-2">Папкадағы хиттер: Ворона, Шашлындос, Девочка, Истерика, Не получается, Пломбир, Твои глаза. Көп жазылған ән автоматты түрде ойнайды!</p>
+        <p class="text-xs text-gray-400 mt-2">Папкадағы хиттер: Ворона, Шашлындос, Девочка, Истерика, Не получается, Пломбир, Твои глаза.</p>
     </div>
 
     <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-4 my-auto shadow-xl">
@@ -32,8 +32,10 @@ HTML_CONTROLLER = """
     </div>
 
     <script>
+        // ⚠️ РЕНДЕР СЕРВЕРІНЕ ТУРА БАЙЛАНЫС ОРНАТУ (ҚАТЕСІЗ АВТОМАТТЫ АНЫҚТАУ)
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
         ws.onopen = () => { document.getElementById('status').innerText = "БАЙЛАНЫС: БЕЛСЕНДІ 🌐"; };
         ws.onclose = () => { document.getElementById('status').innerText = "БАЙЛАНЫС ҮЗІЛДІ ❌"; };
 
@@ -44,6 +46,8 @@ HTML_CONTROLLER = """
                 ws.send(JSON.stringify({ "type": "song_vote", "title": songName.toLowerCase() }));
                 input.value = '';
                 alert(`"${songName}" әніне дауыс берілді! 🚀`);
+            } else {
+                alert("Сервермен байланыс жоқ немесе сөз бос!");
             }
         }
     </script>
@@ -121,6 +125,7 @@ HTML_DASHBOARD = """
         const phoneUrl = window.location.origin + '/phone';
         new QRCode(document.getElementById("qrcode"), { text: phoneUrl, width: 85, height: 85 });
 
+        // ⚠️ ЭКРАНДАҒЫ ВЕБСОКЕТ ПРОТОКОЛЫН ДА АВТОМАТТЫ ТҮЗЕТУ
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
@@ -133,7 +138,7 @@ HTML_DASHBOARD = """
         const bpmText = document.getElementById('bpmText');
         const audioPlayer = document.getElementById('localAudioPlayer');
 
-        let songVotes = {}; // Дауыстарды сақтайтын база
+        let songVotes = {}; 
         let isPlaying = false;
         let beatInterval = null;
         let audioPermissionGranted = false;
@@ -144,24 +149,17 @@ HTML_DASHBOARD = """
             ticker.style.color = "#10b981";
         }
 
-        // 🧠 СУПЕР АЛГОРИТМ: ЕҢ КӨП ДАУЫС ЖИНАҒАН ӘНДІ АНЫҚТАУ ЖӘНЕ ҚОСУ
         function checkAndPlayWinner() {
             if (isPlaying) return;
-
-            // Дауыстарды сұрыптап, ең көп жинаған жеңімпазды анықтаймыз
             let sorted = Object.keys(songVotes).map(key => ({
                 name: key,
                 count: songVotes[key]
             })).sort((a, b) => b.count - a.count);
 
             if (sorted.length === 0 || sorted[0].count === 0) return;
-
             let winner = sorted[0];
-
-            // Жеңімпаз әнді ойнатқан соң оның дауысын нөлдейміз (келесі раунд үшін)
             songVotes[winner.name] = 0; 
             updateRatingUI(); 
-
             playLocalTrack(winner.name);
         }
 
@@ -170,7 +168,6 @@ HTML_DASHBOARD = """
             let fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
-            // Папкадағы нақты файл атауымен сәйкестендіру
             if (songKey === "истерика") {
                 fileTarget = encodeURIComponent("Истерика (Джиос)");
                 displayName = "Джиос & Паша - Истерика (Remix)";
@@ -200,7 +197,6 @@ HTML_DASHBOARD = """
             djBall.style.backgroundColor = '#06b6d4';
             djBall.style.boxShadow = '0 0 50px #00f0ff';
 
-            // Нағыз mp3 файлды іштен ойнату
             audioPlayer.src = window.location.origin + "/static/" + fileTarget + ".mp3";
             audioPlayer.load();
 
@@ -214,7 +210,7 @@ HTML_DASHBOARD = """
                 setTimeout(() => djBall.style.transform = 'scale(1)', 80);
             }, 450);
 
-            let timeLeft = 20; // Көрсетілім үшін әр әнді 20 секунд ойнатамыз
+            let timeLeft = 20; 
             timerText.innerText = `⏳ Ремикс уақыты: ${timeLeft} сек`;
             let countdown = setInterval(() => {
                 timeLeft--;
@@ -229,11 +225,10 @@ HTML_DASHBOARD = """
                 clearInterval(beatInterval);
                 audioPlayer.pause();
                 isPlaying = false;
-                checkAndPlayWinner(); // Ән біткенде келесі көп дауыс жинаған жеңімпазды автоматты қосу
+                checkAndPlayWinner(); 
             }, 20000);
         }
 
-        // 📊 ЭКРАНДАҒЫ ТОП-3 ДАУЫС БЕРУ ГРАФИГІН ЖАҢАРТУ
         function updateRatingUI() {
             let sortedSongs = Object.keys(songVotes).map(key => ({
                 name: key,
@@ -241,22 +236,19 @@ HTML_DASHBOARD = """
             })).filter(s => s.count > 0).sort((a, b) => b.count - a.count);
 
             if (sortedSongs.length === 0) {
-                ratingList.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">Келесі әнге дауыс беріңіз... 🎼</p>`;
+                ratingList.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">Кезек бос... 🎼</p>`;
                 return;
             }
 
             let maxVotes = sortedSongs[0].count || 1;
             ratingList.innerHTML = "";
 
-            // Ең көп дауыс алған үздік 3 әнді экранға шығару
             sortedSongs.slice(0, 3).forEach(song => {
                 let percentage = (song.count / maxVotes) * 100;
-                let cleanName = song.name.toUpperCase();
-
                 ratingList.innerHTML += `
                     <div>
                         <div class="flex justify-between text-[11px] mb-1 font-bold">
-                            <span class="text-cyan-400 font-mono">🎵 ${cleanName}</span>
+                            <span class="text-cyan-400 font-mono">🎵 ${song.name.toUpperCase()}</span>
                             <span class="text-fuchsia-400">${song.count} ДАУЫС</span>
                         </div>
                         <div class="w-full bg-slate-950 h-2 rounded-full">
@@ -270,8 +262,6 @@ HTML_DASHBOARD = """
             const data = JSON.parse(event.data);
             if (data.type === "song_vote") {
                 let title = data.title.toLowerCase().trim();
-
-                // Папкадағы 8 әннің кілт сөздерін сәйкестендіру
                 let finalKey = "шашлындос";
                 if (title.includes("истерика") || title.includes("джиос")) finalKey = "истерика";
                 else if (title.includes("девочка") || title.includes("ханза")) finalKey = "девочка";
@@ -283,12 +273,11 @@ HTML_DASHBOARD = """
                 else if (title.includes("шашлы") || title.includes("хлеб")) finalKey = "шашлындос";
 
                 if (!songVotes[finalKey]) songVotes[finalKey] = 0;
-                songVotes[finalKey]++; // Дауыс санын 1-ге қосамыз
+                songVotes[finalKey]++; 
 
                 ticker.innerText = `⚡ ЖАҢА ДАУЫС КЕЛДІ: "${title.toUpperCase()}"`;
                 updateRatingUI();
 
-                // Егер қазір ештеңе ойнап тұрмаса, бірден жеңімпазды іске қосамыз
                 if (!isPlaying) {
                     checkAndPlayWinner();
                 }
