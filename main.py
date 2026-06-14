@@ -1,8 +1,9 @@
 # main.py
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import os
+import base64
 from templates import HTML_DASHBOARD, HTML_CONTROLLER
 
 app = FastAPI()
@@ -10,18 +11,12 @@ app = FastAPI()
 # mp3 файлдар тұрған статикалық папканы жалғау
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Әндердің резервтік кезегін (Queue) сақтайтын орталық база
+# Кезек пен фотоларды жедел жадында (RAM) қауіпсіз сақтау базасы
 live_queue = {
     "queue": [],  # Телефоннан келген әндер осы тізімге ретімен жиналады
     "total_clicks": 0,
-    "истерика": 0,
-    "девочка": 0,
-    "ворона": 0,
-    "глаза": 0,
-    "любовь": 0,
-    "ню": 0,
-    "пломбир": 0,
-    "шашлындос": 0
+    "photos": [],  # Суреттер осы жерге Base64 форматында жиналады
+    "истерика": 0, "девочка": 0, "ворона": 0, "глаза": 0, "любовь": 0, "ню": 0, "пломбир": 0, "шашлындос": 0
 }
 
 
@@ -35,9 +30,9 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 📱 Телефоннан ән келгенде оны тізімнің соңына қосамыз
+# 📱 Телефоннан ән мен суретті бір уақытта қабылдау API-і
 @app.post("/vote")
-def text_vote(title: str = Form(...)):
+async def text_vote(title: str = Form(...), photo: UploadFile = File(None)):
     clean_title = title.lower().strip()
     final_key = "шашлындос"
 
@@ -58,7 +53,17 @@ def text_vote(title: str = Form(...)):
     elif "шашлы" in clean_title or "хлеб" in clean_title:
         final_key = "шашлындос"
 
-    # Кезекке (резервке) қосу
+    # Фотоны дискке жазбай, лезде Base64 мәтініне айналдырып, RAM-ға сақтаймыз
+    if photo:
+        try:
+            contents = await photo.read()
+            encoded = base64.b64encode(contents).decode("utf-8")
+            mime_type = photo.content_type or "image/jpeg"
+            base64_url = f"data:{mime_type};base64,{encoded}"
+            live_queue["photos"].append(base64_url)
+        except Exception as e:
+            print("Сурет өңдеу қатесі:", e)
+
     live_queue["queue"].append(final_key)
     live_queue["total_clicks"] += 1
     live_queue[final_key] += 1
@@ -66,7 +71,7 @@ def text_vote(title: str = Form(...)):
     return JSONResponse(content={"status": "success", "matched": final_key})
 
 
-# 🖥️ Ноутбук экранына бүкіл кезекті көрсетіп тұру
+# 🖥️ Ноутбук экранына бүкіл кезекті және фотоларды көрсетіп тұру
 @app.get("/get_votes")
 def get_votes():
     return JSONResponse(content=live_queue)

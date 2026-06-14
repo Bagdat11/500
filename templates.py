@@ -6,23 +6,32 @@ HTML_CONTROLLER = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taldyk Summer - Резервке Қосу</title>
+    <title>Taldyk Summer - Ән мен Фото</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="h-screen bg-slate-950 text-white flex flex-col justify-between p-6 text-center select-none overflow-hidden">
     <div>
         <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd DJ</span>
-        <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 РЕЗЕРВКЕ ӘН ҚОСУ</h1>
+        <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ӘН ЖӘНЕ СЕЛФИ ЖІБЕРУ</h1>
         <p class="text-xs text-gray-400 mt-2">Папкадағы хиттер: Ворона, Шашлындос, Девочка, Истерика, Не получается, Пломбир, Твои глаза, Все слова о любви.</p>
     </div>
 
     <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-4 my-auto shadow-xl">
-        <h3 class="text-xs font-bold text-fuchsia-400 uppercase text-left">🎼 Ән немесе Автор аты:</h3>
-        <form onsubmit="sendVote(event)" class="flex flex-col gap-3">
-            <input type="text" id="songInput" placeholder="Мысалы: Шашлындос, Пломбир, Ворона" required
-                   class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400">
-            <button type="submit" class="w-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-black font-black py-3 rounded-xl text-sm">
-                🎵 КЕЗЕККЕ (РЕЗЕРВКЕ) ҚОСУ
+        <form onsubmit="sendVote(event)" class="flex flex-col gap-4 text-left">
+            <div>
+                <label class="text-xs font-bold text-fuchsia-400 uppercase block mb-1">🎼 Ән аты:</label>
+                <input type="text" id="songInput" placeholder="Мысалы: Шашлындос, Пломбир" required
+                       class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400">
+            </div>
+
+            <div>
+                <label class="text-xs font-bold text-cyan-400 uppercase block mb-1">📸 Залдан фото (Селфи - Міндетті емес):</label>
+                <input type="file" id="photoInput" accept="image/*"
+                       class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs text-gray-400 focus:outline-none">
+            </div>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-black font-black py-3 rounded-xl text-sm mt-2">
+                🚀 КЕЗЕККЕ + ФОТО ЖІБЕРУ
             </button>
         </form>
     </div>
@@ -35,17 +44,21 @@ HTML_CONTROLLER = """
         async function sendVote(event) {
             event.preventDefault();
             const input = document.getElementById('songInput');
-            const songName = input.value.trim();
+            const photoInput = document.getElementById('photoInput');
 
             try {
                 const formData = new FormData();
-                formData.append('title', songName);
+                formData.append('title', input.value.trim());
+                if(photoInput.files[0]) {
+                    formData.append('photo', photoInput.files[0]);
+                }
 
                 const response = await fetch('/vote', { method: 'POST', body: formData });
                 const result = await response.json();
                 if(result.status === "success") {
-                    alert(`"${songName}" ремиксі кезекке резервке қосылды! 🚀`);
+                    alert("Ән мен Сурет сәтті жіберілді! 🚀");
                     input.value = '';
+                    photoInput.value = '';
                 }
             } catch (error) {
                 alert("Қате! Сервер жауап бермеді.");
@@ -73,7 +86,7 @@ HTML_DASHBOARD = """
 
     <header class="w-full flex justify-between items-center border-b border-slate-800 pb-4">
         <div>
-            <span class="text-xs font-bold text-cyan-400 tracking-widest uppercase">Smart Playlist Manager v10</span>
+            <span class="text-xs font-bold text-cyan-400 tracking-widest uppercase">Smart Playlist Manager v11</span>
             <h1 class="text-2xl font-black tracking-wider text-white">TALDYK SUMMER <span class="text-fuchsia-500">LIVE SCREEN</span></h1>
         </div>
         <div class="bg-slate-900 border border-cyan-500/30 px-4 py-2 rounded-xl text-center">
@@ -107,25 +120,21 @@ HTML_DASHBOARD = """
             </button>
         </div>
 
-        <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-3xl space-y-4">
-            <h2 class="text-sm font-black text-cyan-400 tracking-wider uppercase border-b border-slate-800 pb-2">👑 ЗАЛДЫҢ АКТИВТІЛІГІ:</h2>
-            <div id="activityLog" class="space-y-3 text-xs text-gray-300">
-                <div class="flex justify-between border-b border-slate-800/50 pb-1">
-                    <span>Жалпы жіберілген дауыс:</span>
-                    <span id="totalVotesCount" class="font-bold text-white">0</span>
-                </div>
-                <p class="text-[11px] text-gray-400 italic mt-2">• Телефоннан жазылған әндер резервке тұрады.</p>
-                <p class="text-[11px] text-gray-400 italic">• Ноутбуктегі батырма кез келген қатып қалуды бірден шешіп, келесі әнді қосады!</p>
+        <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-3xl space-y-4 flex flex-col items-center justify-center h-64 relative">
+            <h2 class="text-xs font-black text-cyan-400 tracking-wider uppercase border-b border-slate-800 pb-1 w-full text-left absolute top-4 left-4">📸 ЗАЛДАН ТІКЕЛЕЙ ФОТО:</h2>
+            <div id="photoSliderContainer" class="w-full h-44 mt-6 rounded-2xl overflow-hidden border-2 border-fuchsia-500/30 flex items-center justify-center bg-black/50">
+                <p id="noPhotoText" class="text-[10px] text-gray-500 text-center p-2">Фото жіберілгенде осы жерде тірілей ауысып тұрады ✨</p>
+                <img id="liveImageDisplay" class="w-full h-full object-cover hidden transition-opacity duration-500" style="opacity: 1;">
             </div>
         </div>
     </div>
 
     <footer class="w-full border-t border-slate-800 pt-4 flex justify-between items-center bg-slate-950 p-4 rounded-2xl">
-        <div class="text-[10px] text-gray-400">TALDYK SUMMER QUEUE SYSTEM v10</div>
+        <div class="text-[10px] text-gray-400">TALDYK SUMMER PHOTO & QUEUE SYSTEM v11</div>
         <div class="bg-white p-2 rounded-2xl flex items-center gap-4 text-black shadow-lg">
             <div id="qrcode" class="p-1 bg-white rounded-lg"></div>
             <div class="text-left pr-4">
-                <h4 class="text-xs font-black uppercase tracking-wide text-slate-950">Өз әніңді жаз</h4>
+                <h4 class="text-xs font-black uppercase tracking-wide text-slate-950">Өз әніңді + фото жаз</h4>
                 <p class="text-[9px] text-gray-600 mt-0.5 leading-tight">Камерамен сканерле де, резервке қос!</p>
             </div>
         </div>
@@ -143,11 +152,15 @@ HTML_DASHBOARD = """
         const bpmText = document.getElementById('bpmText');
         const audioPlayer = document.getElementById('localAudioPlayer');
         const totalVotesCount = document.getElementById('totalVotesCount');
+        const liveImageDisplay = document.getElementById('liveImageDisplay');
+        const noPhotoText = document.getElementById('noPhotoText');
 
         let beatInterval = null;
         let audioPermissionGranted = false;
         let isPlaying = false;
         let serverQueueList = [];
+        let globalPhotos = [];
+        let currentPhotoIndex = 0;
 
         function forceInitAudio() {
             audioPermissionGranted = true;
@@ -160,10 +173,11 @@ HTML_DASHBOARD = """
                 const response = await fetch('/get_votes');
                 const data = await response.json();
 
-                totalVotesCount.innerText = data.total_clicks;
                 serverQueueList = data.queue;
+                globalPhotos = data.photos;
 
                 updateQueueUI(data.queue);
+                updatePhotoSlider(); 
 
                 if (!isPlaying && data.queue.length > 0) {
                     startNextFromQueue();
@@ -173,6 +187,28 @@ HTML_DASHBOARD = """
             }
         }
         setInterval(fetchVotes, 1000);
+
+        function updatePhotoSlider() {
+            if (globalPhotos.length === 0) {
+                noPhotoText.classList.remove('hidden');
+                liveImageDisplay.classList.add('hidden');
+                return;
+            }
+            noPhotoText.classList.add('hidden');
+            liveImageDisplay.classList.remove('hidden');
+        }
+
+        // 🔄 Суреттерді әр 3 секунд сайын автоматты ауыстырып тұратын слайдер
+        setInterval(() => {
+            if (globalPhotos.length > 0) {
+                currentPhotoIndex = (currentPhotoIndex + 1) % globalPhotos.length;
+                liveImageDisplay.style.opacity = 0;
+                setTimeout(() => {
+                    liveImageDisplay.src = globalPhotos[currentPhotoIndex];
+                    liveImageDisplay.style.opacity = 1;
+                }, 200);
+            }
+        }, 3000);
 
         async function startNextFromQueue() {
             if (isPlaying) return;
@@ -247,7 +283,7 @@ HTML_DASHBOARD = """
 
             currentPlaying.innerText = displayName.toUpperCase();
             ballStatus.innerText = "LIVE PLAYING";
-            bpmText.innerText = "🥁 КЕЗЕКПЕН ОЙНАУДА";
+            bpmText.innerText = "🥁 ФОТО СЛАЙДЕР";
             djBall.style.backgroundColor = '#06b6d4';
             djBall.style.boxShadow = '0 0 50px #00f0ff';
 
