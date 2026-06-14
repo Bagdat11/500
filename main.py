@@ -9,7 +9,7 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Дауыстарды сақтайтын қарапайым локалды база
+# Дауыстарды сақтайтын база
 song_votes = {
     "истерика": 0,
     "девочка": 0,
@@ -32,10 +32,11 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 📱 Телефоннан дауыс қабылдау API-і
+# 📱 Телефоннан дауыс қабылдау API-і (ҚАТЕСІ ТҮЗЕТІЛГЕН НҰСҚА)
 @app.post("/vote")
 def text_vote(title: str = Form(...)):
-    clean_title = title.lower().trim()
+    # Python-да .trim() емес, .strip() қолданылады!
+    clean_title = title.lower().strip()
     final_key = "шашлындос"
 
     if "истерика" in clean_title or "джиос" in clean_title:
