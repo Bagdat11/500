@@ -9,9 +9,9 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Әндердің кезегін (List) сақтайтын жаңа база
+# Әндердің кезегін сақтайтын база
 live_queue = {
-    "queue": [],  # Телефоннан келген әндер осы тізімге ретімен жиналады
+    "queue": [],
     "total_clicks": 0,
     "истерика": 0,
     "девочка": 0,
@@ -34,7 +34,7 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 📱 Телефоннан ән келгенде оны тізімнің соңына қосамыз (Резерв)
+# 📱 Телефоннан ән қабылдау
 @app.post("/vote")
 def text_vote(title: str = Form(...)):
     clean_title = title.lower().strip()
@@ -57,7 +57,6 @@ def text_vote(title: str = Form(...)):
     elif "шашлы" in clean_title or "хлеб" in clean_title:
         final_key = "шашлындос"
 
-    # Кезекке (резервке) қосу
     live_queue["queue"].append(final_key)
     live_queue["total_clicks"] += 1
     live_queue[final_key] += 1
@@ -71,11 +70,11 @@ def get_votes():
     return JSONResponse(content=live_queue)
 
 
-# ⏭️ Ноутбуктен немесе автоматты түрде келесі әнге көшкенде тізімнен бірінші әнді алып тастау
-@app.post("/pop_queue")
+# ⏭️ БРАУЗЕР ҮШІН ЕҢ СЕНІМДІ GET СҰРАНЫСЫНА АУЫСТЫРДЫҚ
+@app.get("/pop_queue")
 def pop_queue():
     if len(live_queue["queue"]) > 0:
-        popped_song = live_queue["queue"].pop(0)  # Бірінші тұрған әнді суырып аламыз
+        popped_song = live_queue["queue"].pop(0)
         return JSONResponse(content={"status": "popped", "song": popped_song})
     return JSONResponse(content={"status": "empty"})
 

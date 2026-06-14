@@ -91,7 +91,7 @@ HTML_DASHBOARD = """
         </div>
 
         <div class="flex flex-col items-center justify-center relative h-64">
-            <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-yellow-300 tracking-wide animate-pulse" style="cursor: pointer;" onclick="forceInitAudio()">
+            <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-yellow-300 tracking-wide" style="cursor: pointer;" onclick="forceInitAudio()">
                 🚨 ДЫБЫСТЫ ҚОСУ ҮШІН ОСЫ ЖЕРДІ 1 РЕТ БАСЫҢЫЗ!
             </div>
 
@@ -114,8 +114,8 @@ HTML_DASHBOARD = """
                     <span>Жалпы жіберілген дауыс:</span>
                     <span id="totalVotesCount" class="font-bold text-white">0</span>
                 </div>
-                <p class="text-[11px] text-gray-400 italic mt-2">• Телефоннан жазылған әндер бұзып кірмейді, резервке тұрады.</p>
-                <p class="text-[11px] text-gray-400 italic">• Ноутбуктегі батырманы басып, кез келген уақытта әнді қолмен келесіге ауыстыра аласыз!</p>
+                <p class="text-[11px] text-gray-400 italic mt-2">• Телефоннан жазылған әндер резервке тұрады.</p>
+                <p class="text-[11px] text-gray-400 italic">• Ноутбуктегі батырманы басып, кез келген уақытта әнді келесіге ауыстыра аласыз!</p>
             </div>
         </div>
     </div>
@@ -155,7 +155,6 @@ HTML_DASHBOARD = """
             ticker.style.color = "#10b981";
         }
 
-        // Серверден мәлімет алып тұру
         async function fetchVotes() {
             try {
                 const response = await fetch('/get_votes');
@@ -166,7 +165,6 @@ HTML_DASHBOARD = """
 
                 updateQueueUI(data.queue);
 
-                // Егер қазір ештеңе ойнап тұрмаса және резервте ән болса — автоматты біріншісін қосамыз
                 if (!isPlaying && data.queue.length > 0) {
                     startNextFromQueue();
                 }
@@ -176,19 +174,24 @@ HTML_DASHBOARD = """
         }
         setInterval(fetchVotes, 1000);
 
-        // Кезектегі бірінші әнді алу және ойнату
+        // 🧠 ТҮЗЕТІЛГЕН ҚАУІПСІЗ ТАЗА GET СҰРАНЫСЫ
         async function startNextFromQueue() {
             if (isPlaying) return;
 
-            const response = await fetch('/pop_queue', { method: 'POST' });
-            const result = await response.json();
+            try {
+                const response = await fetch('/pop_queue'); // Енді бұл таза GET сұраныс
+                const result = await response.json();
 
-            if (result.status === "popped") {
-                playLocalTrack(result.song);
+                if (result.status === "popped") {
+                    playLocalTrack(result.song);
+                }
+            } catch(err) {
+                console.log("Кезек алудағы қате");
+                isPlaying = false;
             }
         }
 
-        // ⏭️ НОУТБУКТЕН ӘНДІ АУЫСТЫРУ БАТЫРМАСЫНЫҢ ФУНКЦИЯСЫ (SKIP)
+        // SKIP БАТЫРМАСЫНЫҢ ФУНКЦИЯСЫ
         function skipTrack() {
             audioPlayer.pause();
             clearInterval(beatInterval);
@@ -237,7 +240,6 @@ HTML_DASHBOARD = """
                 setTimeout(() => djBall.style.transform = 'scale(1)', 80);
             }, 450);
 
-            // Ән толық өзі біткенде келесі әнге автоматты көшу логикасы
             audioPlayer.onended = function() {
                 clearInterval(beatInterval);
                 isPlaying = false;
@@ -253,7 +255,6 @@ HTML_DASHBOARD = """
             };
         }
 
-        // 📋 ЭКРАНДАҒЫ РЕЗЕРВ ТІЗІМІН СИНХРОНДЫ КӨРСЕТУ
         function updateQueueUI(queue) {
             if (queue.length === 0) {
                 queueVisualList.innerHTML = `<p class="text-gray-500 text-center py-4">Резерв бос. Сөз жазыңыз... 🎼</p>`;
