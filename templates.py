@@ -13,7 +13,7 @@ HTML_CONTROLLER = """
     <div>
         <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd DJ</span>
         <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 РЕЗЕРВКЕ ӘН ҚОСУ</h1>
-        <p class="text-xs text-gray-400 mt-2">Папкадағы хиттер: Ворона, Шашлындос, Девочка, Истерика, Не получается, Пломбир, Твои глаза.</p>
+        <p class="text-xs text-gray-400 mt-2">Папкадағы хиттер: Ворона, Шашлындос, Девочка, Истерика, Не получается, Пломбир, Твои глаза, Все слова о любви.</p>
     </div>
 
     <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-4 my-auto shadow-xl">
@@ -165,7 +165,6 @@ HTML_DASHBOARD = """
 
                 updateQueueUI(data.queue);
 
-                // Егер ештеңе ойнамай тұрса және кезекте ән болса - автоматты түрде келесіні қосу
                 if (!isPlaying && data.queue.length > 0) {
                     startNextFromQueue();
                 }
@@ -177,7 +176,7 @@ HTML_DASHBOARD = """
 
         async function startNextFromQueue() {
             if (isPlaying) return;
-            isPlaying = true; // Кептелісті болдырмау үшін бірден блок қоямыз
+            isPlaying = true; 
 
             try {
                 const response = await fetch('/pop_queue');
@@ -194,18 +193,14 @@ HTML_DASHBOARD = """
             }
         }
 
-        // 🧠 СУПЕР ТҮЗЕТУ: СКАП (SKIP) ФУНКЦИЯСЫН ҚАТЫП ҚАЛМАЙТЫНДАЙ ТАЗАРТУ
         function skipTrack() {
-            // Ойнатқышты толық тоқтатып, барлық оқиғаларды (event) өшіреміз
             audioPlayer.onended = null; 
             audioPlayer.pause();
             audioPlayer.src = "";
             if (beatInterval) clearInterval(beatInterval);
 
-            // Күту күйін нөлдейміз
             isPlaying = false; 
 
-            // Серверлік тізімді қолмен тексеріп, келесі әнді бірден шақырамыз
             if (serverQueueList.length > 0) {
                 startNextFromQueue();
             } else {
@@ -218,16 +213,38 @@ HTML_DASHBOARD = """
         }
 
         function playLocalTrack(songKey) {
+            // 🧠 ПАПКАДАҒЫ ФАЙЛ АТТАРЫМЕН ТУРА 100% СИНХРОНДАУ (ҚАТЕСІЗ)
             let fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
-            if (songKey === "истерика") { fileTarget = encodeURIComponent("Истерика (Джиос)"); displayName = "Джиос & Паша - Истерика (Remix)"; }
-            else if (songKey === "девочка") { fileTarget = encodeURIComponent("Девочка (Remix)"); displayName = "Jah Khu & Ханза - Девочка (Remix)"; }
-            else if (songKey === "ворона") { fileTarget = encodeURIComponent("Ворона (Кэнни)"); displayName = "Кэнни & МС Дым - Ворона (Remix)"; }
-            else if (songKey === "глаза") { fileTarget = encodeURIComponent("Твои глаза (Лейти"); displayName = "Leytink & RSXD - Твои глаза (Remix)"; }
-            else if (songKey === "любовь") { fileTarget = encodeURIComponent("Все слова о любви"); displayName = "Никита & Мария - Все слова о любви"; }
-            else if (songKey === "ню") { fileTarget = encodeURIComponent("Не получается (Н"); displayName = "НЮ - Не получается (Remix)"; }
-            else if (songKey === "пломбир") { fileTarget = encodeURIComponent("Пломбир (RASA)"); displayName = "RASA - Пломбир (Remix)"; }
+            if (songKey === "истерика") { 
+                fileTarget = encodeURIComponent("Истерика (Джиос)"); 
+                displayName = "Джиос - Истерика"; 
+            }
+            else if (songKey === "девочка") { 
+                fileTarget = encodeURIComponent("Девочка (Remix)"); 
+                displayName = "Ханза - Девочка (Remix)"; 
+            }
+            else if (songKey === "ворона") { 
+                fileTarget = encodeURIComponent("Ворона (Кэнни)"); 
+                displayName = "Кэнни - Ворона"; 
+            }
+            else if (songKey === "глаза") { 
+                fileTarget = encodeURIComponent("Tвои глаза (Лейтинк)"); // 🛠️ ТҮЗЕТІЛДІ: Тұра сенің папкаңдағыдай!
+                displayName = "Лейтинк - Твои глаза"; 
+            }
+            else if (songKey === "ню") { 
+                fileTarget = encodeURIComponent("Не получается (НЮ)"); // 🛠️ ТҮЗЕТІЛДІ: Бас әріппен НЮ!
+                displayName = "НЮ - Не получается"; 
+            }
+            else if (songKey === "пломбир") { 
+                fileTarget = encodeURIComponent("Пломбир (RASA)"); 
+                displayName = "RASA - Пломбир"; 
+            }
+            else if (songKey === "любовь") { 
+                fileTarget = encodeURIComponent("Все слова о любви"); // 🛠️ ЖАҢАДАН ҚОСЫЛДЫ: Папкаңдағы бесінші ән!
+                displayName = "Никита & Мария - Все слова о любви"; 
+            }
 
             currentPlaying.innerText = displayName.toUpperCase();
             ballStatus.innerText = "LIVE PLAYING";
@@ -238,8 +255,16 @@ HTML_DASHBOARD = """
             audioPlayer.src = window.location.origin + "/static/" + fileTarget + ".mp3";
             audioPlayer.load();
 
-            if (audioPermissionGranted) {
-                audioPlayer.play().catch(e => console.log("Дыбыс ойнату рұқсаты керек"));
+            // 🛡️ САҚТАНДЫРҒЫШ: Егер файл бәрібір табылмаса, келесі әнді автоматты іске қосады
+            let playPromise = audioPlayer.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    console.log("Ойнап жатыр");
+                }).catch(error => {
+                    console.log("Файл аты қате, келесі әнге өтеміз...");
+                    isPlaying = false;
+                    skipTrack(); 
+                });
             }
 
             if (beatInterval) clearInterval(beatInterval);
@@ -248,7 +273,6 @@ HTML_DASHBOARD = """
                 setTimeout(() => djBall.style.transform = 'scale(1)', 80);
             }, 450);
 
-            // Ән өздігінен толық біткенде келесі әнді шақыру логикасы
             audioPlayer.onended = function() {
                 clearInterval(beatInterval);
                 isPlaying = false;
@@ -281,4 +305,3 @@ HTML_DASHBOARD = """
     </script>
 </body>
 </html>
-"""
