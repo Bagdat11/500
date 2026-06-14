@@ -73,7 +73,7 @@ HTML_DASHBOARD = """
 
     <header class="w-full flex justify-between items-center border-b border-slate-800 pb-4">
         <div>
-            <span class="text-xs font-bold text-cyan-400 tracking-widest uppercase">Smart Playlist Manager v9</span>
+            <span class="text-xs font-bold text-cyan-400 tracking-widest uppercase">Smart Playlist Manager v10</span>
             <h1 class="text-2xl font-black tracking-wider text-white">TALDYK SUMMER <span class="text-fuchsia-500">LIVE SCREEN</span></h1>
         </div>
         <div class="bg-slate-900 border border-cyan-500/30 px-4 py-2 rounded-xl text-center">
@@ -115,13 +115,13 @@ HTML_DASHBOARD = """
                     <span id="totalVotesCount" class="font-bold text-white">0</span>
                 </div>
                 <p class="text-[11px] text-gray-400 italic mt-2">• Телефоннан жазылған әндер резервке тұрады.</p>
-                <p class="text-[11px] text-gray-400 italic">• Ноутбуктегі батырманы басып, кез келген уақытта әнді келесіге ауыстыра аласыз!</p>
+                <p class="text-[11px] text-gray-400 italic">• Ноутбуктегі батырма кез келген қатып қалуды бірден шешіп, келесі әнді қосады!</p>
             </div>
         </div>
     </div>
 
     <footer class="w-full border-t border-slate-800 pt-4 flex justify-between items-center bg-slate-950 p-4 rounded-2xl">
-        <div class="text-[10px] text-gray-400">TALDYK SUMMER QUEUE SYSTEM v9</div>
+        <div class="text-[10px] text-gray-400">TALDYK SUMMER QUEUE SYSTEM v10</div>
         <div class="bg-white p-2 rounded-2xl flex items-center gap-4 text-black shadow-lg">
             <div id="qrcode" class="p-1 bg-white rounded-lg"></div>
             <div class="text-left pr-4">
@@ -165,6 +165,7 @@ HTML_DASHBOARD = """
 
                 updateQueueUI(data.queue);
 
+                // Егер ештеңе ойнамай тұрса және кезекте ән болса - автоматты түрде келесіні қосу
                 if (!isPlaying && data.queue.length > 0) {
                     startNextFromQueue();
                 }
@@ -174,29 +175,37 @@ HTML_DASHBOARD = """
         }
         setInterval(fetchVotes, 1000);
 
-        // 🧠 ТҮЗЕТІЛГЕН ҚАУІПСІЗ ТАЗА GET СҰРАНЫСЫ
         async function startNextFromQueue() {
             if (isPlaying) return;
+            isPlaying = true; // Кептелісті болдырмау үшін бірден блок қоямыз
 
             try {
-                const response = await fetch('/pop_queue'); // Енді бұл таза GET сұраныс
+                const response = await fetch('/pop_queue');
                 const result = await response.json();
 
                 if (result.status === "popped") {
                     playLocalTrack(result.song);
+                } else {
+                    isPlaying = false;
                 }
             } catch(err) {
-                console.log("Кезек алудағы қате");
+                console.log("Кезек алу қатесі");
                 isPlaying = false;
             }
         }
 
-        // SKIP БАТЫРМАСЫНЫҢ ФУНКЦИЯСЫ
+        // 🧠 СУПЕР ТҮЗЕТУ: СКАП (SKIP) ФУНКЦИЯСЫН ҚАТЫП ҚАЛМАЙТЫНДАЙ ТАЗАРТУ
         function skipTrack() {
+            // Ойнатқышты толық тоқтатып, барлық оқиғаларды (event) өшіреміз
+            audioPlayer.onended = null; 
             audioPlayer.pause();
-            clearInterval(beatInterval);
-            isPlaying = false;
+            audioPlayer.src = "";
+            if (beatInterval) clearInterval(beatInterval);
 
+            // Күту күйін нөлдейміз
+            isPlaying = false; 
+
+            // Серверлік тізімді қолмен тексеріп, келесі әнді бірден шақырамыз
             if (serverQueueList.length > 0) {
                 startNextFromQueue();
             } else {
@@ -209,7 +218,6 @@ HTML_DASHBOARD = """
         }
 
         function playLocalTrack(songKey) {
-            isPlaying = true;
             let fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
@@ -231,7 +239,7 @@ HTML_DASHBOARD = """
             audioPlayer.load();
 
             if (audioPermissionGranted) {
-                audioPlayer.play().catch(e => console.log("Дыбыс қатесі"));
+                audioPlayer.play().catch(e => console.log("Дыбыс ойнату рұқсаты керек"));
             }
 
             if (beatInterval) clearInterval(beatInterval);
@@ -240,6 +248,7 @@ HTML_DASHBOARD = """
                 setTimeout(() => djBall.style.transform = 'scale(1)', 80);
             }, 450);
 
+            // Ән өздігінен толық біткенде келесі әнді шақыру логикасы
             audioPlayer.onended = function() {
                 clearInterval(beatInterval);
                 isPlaying = false;
