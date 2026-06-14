@@ -9,8 +9,10 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Дауыстарды сақтайтын база
-song_votes = {
+# Әндердің кезегін (List) сақтайтын жаңа база
+live_queue = {
+    "queue": [],  # Телефоннан келген әндер осы тізімге ретімен жиналады
+    "total_clicks": 0,
     "истерика": 0,
     "девочка": 0,
     "ворона": 0,
@@ -32,10 +34,9 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 📱 Телефоннан дауыс қабылдау API-і (ҚАТЕСІ ТҮЗЕТІЛГЕН НҰСҚА)
+# 📱 Телефоннан ән келгенде оны тізімнің соңына қосамыз (Резерв)
 @app.post("/vote")
 def text_vote(title: str = Form(...)):
-    # Python-да .trim() емес, .strip() қолданылады!
     clean_title = title.lower().strip()
     final_key = "шашлындос"
 
@@ -56,22 +57,27 @@ def text_vote(title: str = Form(...)):
     elif "шашлы" in clean_title or "хлеб" in clean_title:
         final_key = "шашлындос"
 
-    song_votes[final_key] += 1
+    # Кезекке (резервке) қосу
+    live_queue["queue"].append(final_key)
+    live_queue["total_clicks"] += 1
+    live_queue[final_key] += 1
+
     return JSONResponse(content={"status": "success", "matched": final_key})
 
 
-# 🖥️ Ноутбук экраны дауыстарды алып тұруына арналған API
+# 🖥️ Ноутбукке кезекті көрсетіп тұру
 @app.get("/get_votes")
 def get_votes():
-    return JSONResponse(content=song_votes)
+    return JSONResponse(content=live_queue)
 
 
-# 🔄 Ән ойнап біткенде дауыстарды нөлдеу API-і
-@app.post("/reset_vote")
-def reset_vote(song_key: str = Form(...)):
-    if song_key in song_votes:
-        song_votes[song_key] = 0
-    return JSONResponse(content={"status": "reset_done"})
+# ⏭️ Ноутбуктен немесе автоматты түрде келесі әнге көшкенде тізімнен бірінші әнді алып тастау
+@app.post("/pop_queue")
+def pop_queue():
+    if len(live_queue["queue"]) > 0:
+        popped_song = live_queue["queue"].pop(0)  # Бірінші тұрған әнді суырып аламыз
+        return JSONResponse(content={"status": "popped", "song": popped_song})
+    return JSONResponse(content={"status": "empty"})
 
 
 if __name__ == "__main__":

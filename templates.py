@@ -6,13 +6,13 @@ HTML_CONTROLLER = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taldyk Summer - Әнді Іске Қосу</title>
+    <title>Taldyk Summer - Резервке Қосу</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="h-screen bg-slate-950 text-white flex flex-col justify-between p-6 text-center select-none overflow-hidden">
     <div>
-        <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Instant AI DJ</span>
-        <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ӘНДІ БАСҚАРУ ЗОНАСЫ</h1>
+        <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd DJ</span>
+        <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 РЕЗЕРВКЕ ӘН ҚОСУ</h1>
         <p class="text-xs text-gray-400 mt-2">Папкадағы хиттер: Ворона, Шашлындос, Девочка, Истерика, Не получается, Пломбир, Твои глаза.</p>
     </div>
 
@@ -22,13 +22,13 @@ HTML_CONTROLLER = """
             <input type="text" id="songInput" placeholder="Мысалы: Шашлындос, Пломбир, Ворона" required
                    class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400">
             <button type="submit" class="w-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-black font-black py-3 rounded-xl text-sm">
-                🚀 ӘНДІ БІРДЕН ОЙНАТУ (PLAY)
+                🎵 КЕЗЕККЕ (РЕЗЕРВКЕ) ҚОСУ
             </button>
         </form>
     </div>
 
     <div class="bg-black/30 p-2 rounded-xl border border-white/5">
-        <div class="text-emerald-400 text-[10px] font-bold">БАЙЛАНЫС: 100% ҚАУІПСІЗ СЕРВЕР 🌐</div>
+        <div class="text-emerald-400 text-[10px] font-bold">БАЙЛАНЫС: СЕРВЕРГЕ ҚОСЫЛЫП ТҰР 🌐</div>
     </div>
 
     <script>
@@ -41,13 +41,10 @@ HTML_CONTROLLER = """
                 const formData = new FormData();
                 formData.append('title', songName);
 
-                const response = await fetch('/vote', {
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch('/vote', { method: 'POST', body: formData });
                 const result = await response.json();
                 if(result.status === "success") {
-                    alert(`"${songName}" ремиксі экранға жіберілді! 🚀`);
+                    alert(`"${songName}" ремиксі кезекке резервке қосылды! 🚀`);
                     input.value = '';
                 }
             } catch (error) {
@@ -76,7 +73,7 @@ HTML_DASHBOARD = """
 
     <header class="w-full flex justify-between items-center border-b border-slate-800 pb-4">
         <div>
-            <span class="text-xs font-bold text-cyan-400 tracking-widest uppercase">Instant Crowd DJ System v7</span>
+            <span class="text-xs font-bold text-cyan-400 tracking-widest uppercase">Smart Playlist Manager v9</span>
             <h1 class="text-2xl font-black tracking-wider text-white">TALDYK SUMMER <span class="text-fuchsia-500">LIVE SCREEN</span></h1>
         </div>
         <div class="bg-slate-900 border border-cyan-500/30 px-4 py-2 rounded-xl text-center">
@@ -87,24 +84,27 @@ HTML_DASHBOARD = """
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-auto items-center">
         <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-3xl space-y-4">
-            <h2 class="text-sm font-black text-fuchsia-400 tracking-wider uppercase border-b border-slate-800 pb-2">📊 ЕҢ КӨП ЖАЗЫЛҒАН ӘНДЕР:</h2>
-            <div id="ratingList" class="space-y-4">
-                <p class="text-xs text-gray-500 text-center py-4">Соткадан ән жазыңыз... 🎼</p>
+            <h2 class="text-sm font-black text-fuchsia-400 tracking-wider uppercase border-b border-slate-800 pb-2">📋 АЛДАҒЫ РЕЗЕРВ КЕЗЕГІ:</h2>
+            <div id="queueVisualList" class="space-y-2 text-xs h-40 overflow-y-auto">
+                <p class="text-gray-500 text-center py-4">Резерв бос. Сөз жазыңыз... 🎼</p>
             </div>
         </div>
 
-        <div class="flex flex-col items-center justify-center relative h-64" style="cursor: pointer;" onclick="forceInitAudio()">
-            <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-yellow-300 tracking-wide animate-pulse">
-                🚨 ДЫБЫСТЫ ҚОСУ ҮШІН ЭКРАНДЫ 1 РЕТ БАСЫҢЫЗ!
+        <div class="flex flex-col items-center justify-center relative h-64">
+            <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-yellow-300 tracking-wide animate-pulse" style="cursor: pointer;" onclick="forceInitAudio()">
+                🚨 ДЫБЫСТЫ ҚОСУ ҮШІН ОСЫ ЖЕРДІ 1 РЕТ БАСЫҢЫЗ!
             </div>
 
             <audio id="localAudioPlayer" crossorigin="anonymous"></audio>
 
-            <div id="djBall" class="w-36 h-36 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center transition-all duration-75 text-center p-2">
+            <div id="djBall" class="w-32 h-32 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center transition-all duration-75 text-center p-2 mt-4">
                 <span id="ballStatus" class="text-[10px] font-black text-gray-500 uppercase">КҮТУДЕ</span>
                 <span id="bpmText" class="text-[9px] text-cyan-400 font-mono mt-1"></span>
             </div>
-            <div id="timerText" class="text-xs text-fuchsia-400 mt-4 font-mono h-4 font-bold"></div>
+
+            <button onclick="skipTrack()" class="mt-4 bg-gradient-to-r from-red-500 to-fuchsia-600 hover:from-red-600 hover:to-fuchsia-700 text-white font-black px-6 py-2 rounded-xl text-xs tracking-widest shadow-lg border border-white/10 transition-transform active:scale-95">
+                ⏭️ КЕЛЕСІ ӘН (SKIP)
+            </button>
         </div>
 
         <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-3xl space-y-4">
@@ -114,22 +114,19 @@ HTML_DASHBOARD = """
                     <span>Жалпы жіберілген дауыс:</span>
                     <span id="totalVotesCount" class="font-bold text-white">0</span>
                 </div>
-                <div class="flex justify-between border-b border-slate-800/50 pb-1">
-                    <span>Соңғы белсенділік:</span>
-                    <span id="lastActiveSong" class="font-bold text-yellow-400">-</span>
-                </div>
-                <p class="text-[11px] text-gray-400 italic mt-2">• Жаңа ән жазылған сәтте ескі ән автоматты түрде тоқтап, жаңасы шорт үзіліссіз қосылады!</p>
+                <p class="text-[11px] text-gray-400 italic mt-2">• Телефоннан жазылған әндер бұзып кірмейді, резервке тұрады.</p>
+                <p class="text-[11px] text-gray-400 italic">• Ноутбуктегі батырманы басып, кез келген уақытта әнді қолмен келесіге ауыстыра аласыз!</p>
             </div>
         </div>
     </div>
 
     <footer class="w-full border-t border-slate-800 pt-4 flex justify-between items-center bg-slate-950 p-4 rounded-2xl">
-        <div class="text-[10px] text-gray-400">TALDYK SUMMER INSTANT INTERACTIVE REMIXER v7</div>
+        <div class="text-[10px] text-gray-400">TALDYK SUMMER QUEUE SYSTEM v9</div>
         <div class="bg-white p-2 rounded-2xl flex items-center gap-4 text-black shadow-lg">
             <div id="qrcode" class="p-1 bg-white rounded-lg"></div>
             <div class="text-left pr-4">
                 <h4 class="text-xs font-black uppercase tracking-wide text-slate-950">Өз әніңді жаз</h4>
-                <p class="text-[9px] text-gray-600 mt-0.5 leading-tight">Камерамен сканерле де, лезде ауыстыр!</p>
+                <p class="text-[9px] text-gray-600 mt-0.5 leading-tight">Камерамен сканерле де, резервке қос!</p>
             </div>
         </div>
     </footer>
@@ -141,64 +138,75 @@ HTML_DASHBOARD = """
         const djBall = document.getElementById('djBall');
         const ticker = document.getElementById('ticker');
         const currentPlaying = document.getElementById('currentPlaying');
-        const ratingList = document.getElementById('ratingList');
-        const timerText = document.getElementById('timerText');
+        const queueVisualList = document.getElementById('queueVisualList');
         const ballStatus = document.getElementById('ballStatus');
         const bpmText = document.getElementById('bpmText');
         const audioPlayer = document.getElementById('localAudioPlayer');
         const totalVotesCount = document.getElementById('totalVotesCount');
-        const lastActiveSong = document.getElementById('lastActiveSong');
 
         let beatInterval = null;
         let audioPermissionGranted = false;
-        let currentPlayingKey = null;
-        let localVoteTracker = {};
+        let isPlaying = false;
+        let serverQueueList = [];
 
         function forceInitAudio() {
             audioPermissionGranted = true;
-            ticker.innerText = "🎵 ДЫБЫСТЫҚ ЖҮЙЕ БЕЛСЕНДІ! Ән күтуде...";
+            ticker.innerText = "🎵 ДЫБЫСТЫҚ ЖҮЙЕ БЕЛСЕНДІ!";
             ticker.style.color = "#10b981";
         }
 
-        // Серверден мәліметтерді тірілей алу
+        // Серверден мәлімет алып тұру
         async function fetchVotes() {
             try {
                 const response = await fetch('/get_votes');
-                const votes = await response.json();
+                const data = await response.json();
 
-                // Тексеру: Жалпы дауыс санын есептеу және соңғы жазылған әнді анықтау
-                let total = 0;
-                let activeSongName = "-";
-                let maxVal = -1;
+                totalVotesCount.innerText = data.total_clicks;
+                serverQueueList = data.queue;
 
-                Object.keys(votes).forEach(key => {
-                    total += votes[key];
-                    if (votes[key] > 0 && votes[key] >= maxVal) {
-                        maxVal = votes[key];
-                    }
+                updateQueueUI(data.queue);
 
-                    // 🧠 ІРГЕЛІ ӨЗГЕРІС: Жаңа дауыс келгенін анықтау алгоритмі
-                    if (!localVoteTracker[key]) localVoteTracker[key] = 0;
-                    if (votes[key] > localVoteTracker[key]) {
-                        localVoteTracker[key] = votes[key];
-                        activeSongName = key.toUpperCase();
-                        lastActiveSong.innerText = activeSongName;
-
-                        // Ескі әнді лақтырып, жаңасын бірден қосу (INTERRUPT / SKIP LOGIC)
-                        playLocalTrack(key);
-                    }
-                });
-
-                totalVotesCount.innerText = total;
-                updateRatingUI(votes);
+                // Егер қазір ештеңе ойнап тұрмаса және резервте ән болса — автоматты біріншісін қосамыз
+                if (!isPlaying && data.queue.length > 0) {
+                    startNextFromQueue();
+                }
             } catch (e) {
                 console.log("Дерек алу қатесі");
             }
         }
-        setInterval(fetchVotes, 1000); 
+        setInterval(fetchVotes, 1000);
+
+        // Кезектегі бірінші әнді алу және ойнату
+        async function startNextFromQueue() {
+            if (isPlaying) return;
+
+            const response = await fetch('/pop_queue', { method: 'POST' });
+            const result = await response.json();
+
+            if (result.status === "popped") {
+                playLocalTrack(result.song);
+            }
+        }
+
+        // ⏭️ НОУТБУКТЕН ӘНДІ АУЫСТЫРУ БАТЫРМАСЫНЫҢ ФУНКЦИЯСЫ (SKIP)
+        function skipTrack() {
+            audioPlayer.pause();
+            clearInterval(beatInterval);
+            isPlaying = false;
+
+            if (serverQueueList.length > 0) {
+                startNextFromQueue();
+            } else {
+                ballStatus.innerText = "КҮТУДЕ";
+                bpmText.innerText = "";
+                djBall.style.backgroundColor = '#0f172a';
+                djBall.style.boxShadow = 'none';
+                currentPlaying.innerText = "РЕЗЕРВ БОС. ӘН КҮТУДЕ... 🎵";
+            }
+        }
 
         function playLocalTrack(songKey) {
-            currentPlayingKey = songKey;
+            isPlaying = true;
             let fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
@@ -212,64 +220,51 @@ HTML_DASHBOARD = """
 
             currentPlaying.innerText = displayName.toUpperCase();
             ballStatus.innerText = "LIVE PLAYING";
-            bpmText.innerText = "🥁 ТОЛЫҚ РЕЖИМ";
+            bpmText.innerText = "🥁 КЕЗЕКПЕН ОЙНАУДА";
             djBall.style.backgroundColor = '#06b6d4';
             djBall.style.boxShadow = '0 0 50px #00f0ff';
 
-            // Аудионы ойнату
             audioPlayer.src = window.location.origin + "/static/" + fileTarget + ".mp3";
             audioPlayer.load();
 
             if (audioPermissionGranted) {
-                audioPlayer.play().catch(e => console.log("Дыбыс ойнату қатесі"));
+                audioPlayer.play().catch(e => console.log("Дыбыс қатесі"));
             }
 
-            // Шардың бит ырғағы
             if (beatInterval) clearInterval(beatInterval);
             beatInterval = setInterval(() => {
                 djBall.style.transform = 'scale(1.2)';
                 setTimeout(() => djBall.style.transform = 'scale(1)', 80);
             }, 450);
 
-            // Таймерді тазалау (Енді ән үзілмейді, өзі табиғи біткенше толық ойнайды)
-            timerText.innerText = "🔊 ӘН ТОЛЫҚ ОЙНАУДА...";
-
-            // Ән өзі табиғи біткенде шарды бастапқы күйге келтіру
+            // Ән толық өзі біткенде келесі әнге автоматты көшу логикасы
             audioPlayer.onended = function() {
-                if (currentPlayingKey === songKey) {
-                    clearInterval(beatInterval);
+                clearInterval(beatInterval);
+                isPlaying = false;
+                if (serverQueueList.length > 0) {
+                    startNextFromQueue();
+                } else {
                     ballStatus.innerText = "АЯҚТАЛДЫ";
                     bpmText.innerText = "";
                     djBall.style.backgroundColor = '#0f172a';
                     djBall.style.boxShadow = 'none';
                     currentPlaying.innerText = "ӘН КҮТУДЕ... 🎵";
-                    timerText.innerText = "";
                 }
             };
         }
 
-        function updateRatingUI(votes) {
-            let sortedSongs = Object.keys(votes).map(key => ({ name: key, count: votes[key] })).filter(s => s.count > 0).sort((a, b) => b.count - a.count);
-
-            if (sortedSongs.length === 0) {
-                ratingList.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">Соткадан ән жазыңыз... 🎼</p>`;
+        // 📋 ЭКРАНДАҒЫ РЕЗЕРВ ТІЗІМІН СИНХРОНДЫ КӨРСЕТУ
+        function updateQueueUI(queue) {
+            if (queue.length === 0) {
+                queueVisualList.innerHTML = `<p class="text-gray-500 text-center py-4">Резерв бос. Сөз жазыңыз... 🎼</p>`;
                 return;
             }
-
-            let maxVotes = sortedSongs[0].count || 1;
-            ratingList.innerHTML = "";
-
-            sortedSongs.slice(0, 3).forEach(song => {
-                let percentage = (song.count / maxVotes) * 100;
-                ratingList.innerHTML += `
-                    <div>
-                        <div class="flex justify-between text-[11px] mb-1 font-bold">
-                            <span class="text-cyan-400 font-mono">🎵 ${song.name.toUpperCase()}</span>
-                            <span class="text-fuchsia-400">${song.count} РЕТ</span>
-                        </div>
-                        <div class="w-full bg-slate-950 h-2 rounded-full">
-                            <div class="bg-gradient-to-r from-cyan-400 to-fuchsia-500 h-2 rounded-full transition-all duration-300" style="width: ${percentage}%"></div>
-                        </div>
+            queueVisualList.innerHTML = "";
+            queue.forEach((song, index) => {
+                queueVisualList.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                        <span class="font-bold text-white text-[11px]">${index + 1}. 🎵 ${song.toUpperCase()}</span>
+                        <span class="text-[9px] text-fuchsia-400 uppercase tracking-wider font-mono">Резервте</span>
                     </div>`;
             });
         }
