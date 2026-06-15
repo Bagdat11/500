@@ -164,7 +164,7 @@ HTML_DASHBOARD = """
                 🌐 TALDYK INTERACTIVE DJ SYSTEM ACTIVE
             </div>
 
-            <audio id="localAudioPlayer" controls class="hidden"></audio>
+            <audio id="localAudioPlayer" volume="1" controls class="hidden"></audio>
 
             <div id="djBall" class="w-32 h-32 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center transition-all duration-75 text-center p-2 mt-4">
                 <span id="ballStatus" class="text-[10px] font-black text-gray-500 uppercase">КҮТУДЕ</span>
@@ -226,9 +226,9 @@ HTML_DASHBOARD = """
                 updateQueueUI(data.queue);
                 updatePhotoSlider(); 
 
-                // 🎛️ ДЫБЫСТЫ ТЕЛЕФОННАН ТІКЕЛЕЙ БАСҚАРУ (ҚАТЕСІЗ ГАРАНТИЯ)
-                if (data.volume !== undefined) {
-                    audioPlayer.volume = data.volume;
+                // ✨ ДЫБЫСТЫ ТЕК СЕРВЕРДЕ ТҮЗУ МӘН БОЛҒАНДА ҒАНА ӨЗГЕРТЕМІЗ (0-ГЕ ТҮСІП КЕТПЕУІ ҮШІН)
+                if (data.volume !== undefined && data.volume !== null) {
+                    audioPlayer.volume = parseFloat(data.volume);
                 }
 
                 if (!isPlaying && data.queue.length > 0) {
@@ -322,7 +322,7 @@ HTML_DASHBOARD = """
             let playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => { console.log("Ойнап тұр"); }).catch(error => {
-                    console.log("Автоматты қосылу блогы, күтуде...");
+                    console.log("Браузер блоктады, бірақ секунд кетіп жатыр");
                 });
             }
 
