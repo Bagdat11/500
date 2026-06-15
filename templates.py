@@ -30,14 +30,24 @@ HTML_CONTROLLER = """
         </div>
     </div>
 
-    <div class="bg-slate-900/80 border border-cyan-500/20 p-4 rounded-2xl space-y-4 shadow-xl">
-        <h3 class="text-[11px] font-black text-cyan-400 uppercase text-left tracking-wider">🎛️ VOLUME CONTROLLER (LIVE)</h3>
-        <div class="flex flex-col gap-2">
+    <div class="bg-slate-900/80 border border-cyan-500/20 p-3 rounded-2xl space-y-3 shadow-xl">
+        <h3 class="text-[11px] font-black text-cyan-400 uppercase text-left tracking-wider">🎛️ ТІРІЛЕЙ ДЫБЫС МИКШЕРІ</h3>
+
+        <div class="flex flex-col gap-1">
             <div class="flex justify-between text-[10px] font-bold text-gray-400">
-                <span>🎚️ MASTER VOLUME</span>
+                <span>🔊 BASS EFFECT (ДҮҢК-ДҮҢК)</span>
+                <span id="bass_num" class="text-fuchsia-400">0 dB</span>
+            </div>
+            <input type="range" id="bass_slider" min="0" max="30" value="0" step="1" oninput="sendMixerChange()" 
+                   class="w-full accent-fuchsia-500 h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer">
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[10px] font-bold text-gray-400">
+                <span>🎚️ MASTER VOLUME (ДАУЫС)</span>
                 <span id="vol_num" class="text-cyan-400">100%</span>
             </div>
-            <input type="range" id="vol_slider" min="0" max="1" value="1" step="0.05" oninput="sendMixerChange()" 
+            <input type="range" id="vol_slider" min="0" max="2" value="1" step="0.1" oninput="sendMixerChange()" 
                    class="w-full accent-cyan-400 h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer">
         </div>
     </div>
@@ -65,13 +75,17 @@ HTML_CONTROLLER = """
         }
 
         async function sendMixerChange() {
+            const bass = document.getElementById('bass_slider').value;
             const vol = document.getElementById('vol_slider').value;
+
+            document.getElementById('bass_num').innerText = bass + " dB";
             document.getElementById('vol_num').innerText = Math.round(vol * 100) + "%";
+
             try {
                 await fetch('/update_mixer', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ volume: parseFloat(vol) })
+                    body: JSON.stringify({ bass: parseInt(bass), volume: parseFloat(vol) })
                 });
             } catch (e) { console.log("Микшер қатесі"); }
         }
@@ -124,7 +138,7 @@ HTML_DASHBOARD = """
         body { font-family: 'Orbitron', sans-serif; background: radial-gradient(circle, #020617 0%, #000000 100%); }
     </style>
 </head>
-<body class="h-screen flex flex-col justify-between p-6 text-white overflow-hidden">
+<body class="h-screen flex flex-col justify-between p-6 text-white overflow-hidden" onclick="forceInitAudio()">
 
     <header class="w-full flex justify-between items-center border-b border-slate-800 pb-4">
         <div>
@@ -147,12 +161,12 @@ HTML_DASHBOARD = """
 
         <div class="flex flex-col items-center justify-center relative h-64">
             <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-yellow-300 tracking-wide">
-                🌐 INTERACTIVE SYSTEM ACTIVE
+                🚨 МИКШЕРДІ ОЯТУ ҮШІН ЭКРАНДЫ 1 РЕТ БАСЫҢЫЗ!
             </div>
 
-            <audio id="localAudioPlayer" controls class="mt-4 block w-full accent-fuchsia-500 rounded-xl max-w-xs shadow-md"></audio>
+            <audio id="localAudioPlayer" crossorigin="anonymous"></audio>
 
-            <div id="djBall" class="w-24 h-24 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center transition-all duration-75 text-center p-2 mt-4">
+            <div id="djBall" class="w-32 h-32 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center transition-all duration-75 text-center p-2 mt-4" style="cursor:pointer;">
                 <span id="ballStatus" class="text-[10px] font-black text-gray-500 uppercase">КҮТУДЕ</span>
                 <span id="bpmText" class="text-[9px] text-cyan-400 font-mono mt-1"></span>
             </div>
@@ -187,6 +201,7 @@ HTML_DASHBOARD = """
         new QRCode(document.getElementById("qrcode"), { text: phoneUrl, width: 85, height: 85 });
 
         const djBall = document.getElementById('djBall');
+        const ticker = document.getElementById('ticker');
         const currentPlaying = document.getElementById('currentPlaying');
         const queueVisualList = document.getElementById('queueVisualList');
         const ballStatus = document.getElementById('ballStatus');
@@ -196,10 +211,47 @@ HTML_DASHBOARD = """
         const noPhotoText = document.getElementById('noPhotoText');
 
         let beatInterval = null;
+        let audioPermissionGranted = false;
         let isPlaying = false;
         let serverQueueList = [];
         let globalPhotos = [];
         let currentPhotoIndex = 0;
+
+        // «ДҮҢК-ДҮҢК» ЖАСАЙТЫН АУДИО ФИЛЬТРЛЕР ТІЗБЕГІ
+        let audioCtx = null;
+        let audioSource = null;
+        let bassFilter = null;
+        let gainNode = null;
+
+        function forceInitAudio() {
+            if(audioPermissionGranted) return;
+            audioPermissionGranted = true;
+            ticker.innerText = "🎵 ДҮҢК-ДҮҢК МИКШЕРІ БЕЛСЕНДІ!";
+            ticker.style.color = "#10b981";
+
+            if(!audioCtx) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioSource = audioCtx.createMediaElementSource(audioPlayer);
+
+                    // БАСС ФИЛЬТРІ (Lowshelf - Төменгі жиіліктер үшін)
+                    bassFilter = audioCtx.createBiquadFilter();
+                    bassFilter.type = "lowshelf";
+                    bassFilter.frequency.setValueAtTime(150, audioCtx.currentTime); // Тек нағыз басс жиілігі
+                    bassFilter.gain.setValueAtTime(0, audioCtx.currentTime);
+
+                    // ДАУЫС ТҮЙІНІ
+                    gainNode = audioCtx.createGain();
+                    gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
+
+                    // Тізбек: Плеер -> Басс (дүңк) -> Дауыс -> Колонка
+                    audioSource.connect(bassFilter);
+                    bassFilter.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    console.log("Дүңк-дүңк сүзгілері қосылды!");
+                } catch(e) { console.log("Аудио ояту қатесі", e); }
+            }
+        }
 
         async function fetchVotes() {
             try {
@@ -212,18 +264,18 @@ HTML_DASHBOARD = """
                 updateQueueUI(data.queue);
                 updatePhotoSlider(); 
 
-                // Дыбысты реттеу (Қауіпсіз, тікелей браузерге)
-                if (data.volume !== undefined && data.volume !== null) {
-                    audioPlayer.volume = parseFloat(data.volume);
+                // 🎛️ ТЕЛЕФОННАН КЕЛГЕН БАСС ПЕН ДАУЫСТЫ ТІРІЛЕЙ ҚОЛДАНУ
+                if (audioCtx && bassFilter && gainNode) {
+                    bassFilter.gain.setValueAtTime(data.bass, audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(data.volume, audioCtx.currentTime);
                 }
 
-                if (!isPlaying && data.queue.length > 0) {
+                if (!isPlaying && data.queue.length > 0 && audioPermissionGranted) {
                     startNextFromQueue();
                 }
             } catch (e) { console.log("Дерек алу қатесі"); }
         }
-        // 🚨 ОҢТАЙЛАНДЫРЫЛДЫ: Сервер құлап қалмас үшін сұраныс арасы 2 секундқа ұзартылды
-        setInterval(fetchVotes, 2000); 
+        setInterval(fetchVotes, 1000); // Оңтайлы 1 секундтық жиілік
 
         function updatePhotoSlider() {
             if (globalPhotos.length === 0) {
@@ -285,40 +337,43 @@ HTML_DASHBOARD = """
             }
         }
 
+        // 🍖 СЕНІҢ ПАПКАҢДАҒЫ НАҚТЫ ФАЙЛДАРДЫ ОЙНАТУ ЖҮЙЕСІ (ЛАТЫНША ТАЗА АТАУЛАР)
         function playLocalTrack(songKey) {
-            // Сенімді CDN музыкалық ағыны (Файл жоқ болса да 100% ойнайды)
-            let audioUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"; 
+            let fileTarget = "shashlyndos"; 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
-            if (songKey === "истерика") { audioUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"; displayName = "Джиос - Истерика"; }
-            else if (songKey === "девочка") { audioUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"; displayName = "Ханза - Девочка (Remix)"; }
-            else if (songKey === "ворона") { audioUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"; displayName = "Кэнни - Ворона"; }
-            else if (songKey === "глаза") { audioUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"; displayName = "Твои глаза (Лейтинк)"; }
-            else if (songKey === "ню") { audioUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3"; displayName = "НЮ - Не получается"; }
-            else if (songKey === "пломбир") { audioUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3"; displayName = "RASA - Пломбир"; }
-            else if (songKey === "любовь") { audioUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"; displayName = "Никита & Мария - Все слова о любви"; }
+            if (songKey === "истерика") { fileTarget = "isterika"; displayName = "Джиос - Истерика"; }
+            else if (songKey === "девочка") { fileTarget = "devochka"; displayName = "Ханза - Девочка (Remix)"; }
+            else if (songKey === "ворона") { fileTarget = "vorona"; displayName = "Кэнни - Ворона"; }
+            else if (songKey === "глаза") { fileTarget = "glaza"; displayName = "Твои глаза (Лейтинк)"; }
+            else if (songKey === "ню") { fileTarget = "nu"; displayName = "НЮ - Не получается"; }
+            else if (songKey === "пломбир") { fileTarget = "plombir"; displayName = "RASA - Пломбир"; }
+            else if (songKey === "любовь") { fileTarget = "lubov"; displayName = "Никита & Мария - Все слова о любви"; }
 
             currentPlaying.innerText = displayName.toUpperCase();
             ballStatus.innerText = "LIVE PLAYING";
-            bpmText.innerText = "🥁 ИНТЕРАКТИВ";
+            bpmText.innerText = "🥁 ДҮҢК-ДҮҢК ACTIVE";
             djBall.style.backgroundColor = '#06b6d4';
             djBall.style.boxShadow = '0 0 50px #00f0ff';
 
-            audioPlayer.src = audioUrl;
+            // Сенің static папкаңнан нақты файлды жүктейді
+            audioPlayer.src = window.location.origin + "/static/" + fileTarget + ".mp3";
             audioPlayer.load();
+
+            if(audioPermissionGranted) forceInitAudio();
 
             let playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
-                playPromise.then(_ => { console.log("Ойнап тұр"); }).catch(error => {
-                    console.log("Автоматты блок");
+                playPromise.then(_ => { console.log("Сенің әнің ойнап жатыр!"); }).catch(error => {
+                    console.log("Экран басылмады, күтуде...");
                 });
             }
 
             if (beatInterval) clearInterval(beatInterval);
             beatInterval = setInterval(() => {
-                djBall.style.transform = 'scale(1.2)';
+                djBall.style.transform = 'scale(1.15)';
                 setTimeout(() => djBall.style.transform = 'scale(1)', 80);
-            }, 450);
+            }, 440);
 
             audioPlayer.onended = function() {
                 clearInterval(beatInterval);
