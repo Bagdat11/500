@@ -4,23 +4,17 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import os
 import base64
-from typing import Optional
 from templates import HTML_DASHBOARD, HTML_CONTROLLER
 
 app = FastAPI()
 
-if not os.path.exists("static"):
-    os.makedirs("static")
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Ортақ мәліметтер
 live_queue = {
     "queue": [],
     "total_clicks": 0,
     "photos": [],
-    "истерика": 0, "девочка": 0, "ворона": 0, "глаза": 0, "любовь": 0, "ню": 0, "пломбир": 0, "шашлындос": 0,
-    "volume": 1.0  # Телефоннан келетін дауыс мәні
+    "истерика": 0, "девочка": 0, "ворона": 0, "глаза": 0, "любовь": 0, "ню": 0, "пломбир": 0, "шашлындос": 0
 }
 
 
@@ -34,15 +28,10 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-@app.post("/update_mixer")
-async def update_mixer(data: dict):
-    # Телефоннан тек дауыс деңгейін тікелей аламыз
-    live_queue["volume"] = float(data.get("volume", 1.0))
-    return JSONResponse(content={"status": "success"})
-
-
+# 📱 ЖАҢАРТЫЛҒАН API: Ән мен Фотоны бөлек те, бірге де қабылдай береді
 @app.post("/vote")
-async def text_vote(title: Optional[str] = Form(None), photo: Optional[UploadFile] = File(None)):
+async def text_vote(title: str = Form(None), photo: UploadFile = File(None)):
+    # 1. Егер фото жіберілсе, оны әнге қарамастан бірден RAM-ға сақтаймыз
     if photo:
         try:
             contents = await photo.read()
@@ -53,6 +42,7 @@ async def text_vote(title: Optional[str] = Form(None), photo: Optional[UploadFil
         except Exception as e:
             print("Сурет өңдеу қатесі:", e)
 
+    # 2. Егер ән аты жазылса, оны кезекке тұрғызамыз
     if title and title.strip() != "":
         clean_title = title.lower().strip()
         final_key = "шашлындос"
@@ -80,10 +70,11 @@ async def text_vote(title: Optional[str] = Form(None), photo: Optional[UploadFil
 
         return JSONResponse(content={"status": "success", "type": "song_added", "matched": final_key})
 
+    # Тек фото кеткен кездегі жауап
     if photo:
         return JSONResponse(content={"status": "success", "type": "photo_added"})
 
-    return JSONResponse(content={"status": "error", "message": "Ештеңе жіберілмеді"})
+    return JSONResponse(content={"status": "error", "message": "Ештеңе жіберілеген жоқ"})
 
 
 @app.get("/get_votes")

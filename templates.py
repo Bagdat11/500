@@ -6,57 +6,56 @@ HTML_CONTROLLER = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taldyk Summer - Басқару Панелі</title>
+    <title>Taldyk Summer - Бөлек Жіберу</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="h-screen bg-slate-950 text-white flex flex-col justify-between p-4 text-center select-none overflow-hidden">
+<body class="h-screen bg-slate-950 text-white flex flex-col justify-between p-6 text-center select-none overflow-hidden">
     <div>
         <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd DJ</span>
         <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ИНТЕРАКТИВТІ БАСҚАРУ</h1>
         <p class="text-xs text-gray-400 mt-1">Әнді де, суретті де бір-біріне кедергісіз бөлек жібере беріңіз!</p>
     </div>
 
-    <div class="bg-slate-900/40 border border-slate-800/60 p-2 rounded-xl">
-        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block text-left mb-1">✨ Папкадағы дайын әндер:</span>
-        <div class="flex flex-wrap gap-1.5 justify-start max-h-24 overflow-y-auto">
-            <button onclick="selectSong('Шашлындос')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 px-2.5 py-1 rounded-full text-[11px] text-gray-300">🍖 Шашлындос</button>
-            <button onclick="selectSong('Истерика')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 px-2.5 py-1 rounded-full text-[11px] text-gray-300">😭 Истерика</button>
-            <button onclick="selectSong('Ворона')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 px-2.5 py-1 rounded-full text-[11px] text-gray-300">🦅 Ворона</button>
-            <button onclick="selectSong('Твои глаза')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 px-2.5 py-1 rounded-full text-[11px] text-gray-300">👀 Твои глаза</button>
-            <button onclick="selectSong('Не получается')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 px-2.5 py-1 rounded-full text-[11px] text-gray-300">💔 Не получается</button>
-            <button onclick="selectSong('Пломбир')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 px-2.5 py-1 rounded-full text-[11px] text-gray-300">🍦 Пломбир</button>
-            <button onclick="selectSong('Девочка')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 px-2.5 py-1 rounded-full text-[11px] text-gray-300">💃 Девочка</button>
-            <button onclick="selectSong('Все слова о любви')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 px-2.5 py-1 rounded-full text-[11px] text-gray-300">❤️ Слова о любви</button>
+    <div class="bg-slate-900/40 border border-slate-800/60 p-3 rounded-2xl">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block text-left mb-2">✨ Папкадағы дайын әндер (Басыңыз):</span>
+        <div class="flex flex-wrap gap-2 justify-start">
+            <button onclick="selectSong('Шашлындос')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🍖 Шашлындос</button>
+            <button onclick="selectSong('Истерика')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">😭 Истерика</button>
+            <button onclick="selectSong('Ворона')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🦅 Ворона</button>
+            <button onclick="selectSong('Твои глаза')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">👀 Твои глаза</button>
+            <button onclick="selectSong('Не получается')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">💔 Не получается</button>
+            <button onclick="selectSong('Пломбир')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🍦 Пломбир</button>
+            <button onclick="selectSong('Девочка')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">💃 Девочка</button>
+            <button onclick="selectSong('Все слова о любви')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">❤️ Слова о любви</button>
         </div>
     </div>
 
-    <div class="bg-slate-900/80 border border-cyan-500/20 p-4 rounded-2xl space-y-4 shadow-xl">
-        <h3 class="text-[11px] font-black text-cyan-400 uppercase text-left tracking-wider">🎛️ ДЫБЫС МИКШЕРІ</h3>
-        <div class="flex flex-col gap-2">
-            <div class="flex justify-between text-[10px] font-bold text-gray-400">
-                <span>🎚️ MASTER VOLUME (ДАУЫС ДЕҢГЕЙІ)</span>
-                <span id="vol_num" class="text-cyan-400">100%</span>
+    <div class="space-y-4 my-auto">
+        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl">
+            <h3 class="text-xs font-bold text-fuchsia-400 uppercase text-left">🎼 1. Ән таңдау:</h3>
+            <div class="flex gap-2">
+                <input type="text" id="songInput" placeholder="Жоғарыдан таңдаңыз немесе жазыңыз..." 
+                       class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fuchsia-400">
+                <button onclick="sendSong()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-black font-black px-4 rounded-xl text-xs uppercase tracking-wider">
+                    ҚОСУ
+                </button>
             </div>
-            <input type="range" id="vol_slider" min="0" max="1" value="1" step="0.05" oninput="sendMixerChange()" 
-                   class="w-full accent-cyan-400 h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer">
+        </div>
+
+        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl">
+            <h3 class="text-xs font-bold text-cyan-400 uppercase text-left">📸 2. Залдан Селфи (Фото):</h3>
+            <div class="flex flex-col gap-2">
+                <input type="file" id="photoInput" accept="image/*"
+                       class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs text-gray-400 focus:outline-none">
+                <button onclick="sendPhoto()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-black py-2 rounded-xl text-xs uppercase tracking-wider">
+                    📸 ЭКРАНҒА СУРЕТТІ ҰШЫРУ
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="space-y-2">
-        <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl flex gap-2 shadow-md">
-            <input type="text" id="songInput" placeholder="Ән аты..." 
-                   class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none">
-            <button onclick="sendSong()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-black font-black px-3 rounded-lg text-xs uppercase">ҚОСУ</button>
-        </div>
-
-        <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between shadow-md">
-            <input type="file" id="photoInput" accept="image/*" class="text-[10px] text-gray-400 w-2/3">
-            <button onclick="sendPhoto()" class="bg-cyan-500 hover:bg-cyan-600 text-black font-black px-3 py-1.5 rounded-lg text-[10px] uppercase">📸 ҰШЫРУ</button>
-        </div>
-    </div>
-
-    <div class="bg-black/30 p-1.5 rounded-lg border border-white/5">
-        <div class="text-emerald-400 text-[10px] font-bold">ЖҮЙЕ ДАЙЫН • СЕРВЕР ТІРІ 🌐</div>
+    <div class="bg-black/30 p-2 rounded-xl border border-white/5">
+        <div class="text-emerald-400 text-[10px] font-bold">ЖҮЙЕ ДАЙЫН СЕРВЕР ТІРІ 🌐</div>
     </div>
 
     <script>
@@ -64,28 +63,18 @@ HTML_CONTROLLER = """
             document.getElementById('songInput').value = songName;
         }
 
-        async function sendMixerChange() {
-            const vol = document.getElementById('vol_slider').value;
-            document.getElementById('vol_num').innerText = Math.round(vol * 100) + "%";
-            try {
-                await fetch('/update_mixer', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ volume: parseFloat(vol) })
-                });
-            } catch (e) { console.log("Микшер қатесі"); }
-        }
-
         async function sendSong() {
             const songInput = document.getElementById('songInput');
             if(!songInput.value.trim()) return alert("Ән атын жазыңыз!");
+
             try {
                 const formData = new FormData();
                 formData.append('title', songInput.value.trim());
+
                 const response = await fetch('/vote', { method: 'POST', body: formData });
                 const result = await response.json();
                 if(result.status === "success") {
-                    alert(`"${songInput.value}" кезекке қосылды! 🎵`);
+                    alert(`"${songInput.value}" кезекке резервке қосылды! 🎵`);
                     songInput.value = '';
                 }
             } catch (error) { alert("Сервер жауап бермеді."); }
@@ -94,14 +83,16 @@ HTML_CONTROLLER = """
         async function sendPhoto() {
             const photoInput = document.getElementById('photoInput');
             if(!photoInput.files[0]) return alert("Алдымен сурет таңдаңыз!");
+
             try {
                 const formData = new FormData();
                 formData.append('title', ''); 
                 formData.append('photo', photoInput.files[0]);
+
                 const response = await fetch('/vote', { method: 'POST', body: formData });
                 const result = await response.json();
                 if(result.status === "success") {
-                    alert("Фото экранға ұшырылды! 📸✨");
+                    alert("Фото экрандағы слайдерге сәтті ұшырылды! 📸✨");
                     photoInput.value = '';
                 }
             } catch (error) { alert("Сервер жауап бермеді."); }
@@ -146,11 +137,11 @@ HTML_DASHBOARD = """
         </div>
 
         <div class="flex flex-col items-center justify-center relative h-64">
-            <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-emerald-400 tracking-wide">
-                🌐 TALDYK INTERACTIVE DJ SYSTEM ACTIVE
+            <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-yellow-300 tracking-wide" style="cursor: pointer;" onclick="forceInitAudio()">
+                🚨 ДЫБЫСТЫ ҚОСУ ҮШІН ОСЫ ЖЕРДІ 1 РЕТ БАСЫҢЫЗ!
             </div>
 
-            <audio id="localAudioPlayer" class="hidden"></audio>
+            <audio id="localAudioPlayer" crossorigin="anonymous"></audio>
 
             <div id="djBall" class="w-32 h-32 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center transition-all duration-75 text-center p-2 mt-4">
                 <span id="ballStatus" class="text-[10px] font-black text-gray-500 uppercase">КҮТУДЕ</span>
@@ -164,9 +155,9 @@ HTML_DASHBOARD = """
 
         <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-3xl space-y-4 flex flex-col items-center justify-center h-64 relative">
             <h2 class="text-xs font-black text-cyan-400 tracking-wider uppercase border-b border-slate-800 pb-1 w-full text-left absolute top-4 left-4">📸 ЗАЛДАН ТІКЕЛЕЙ ФОТО:</h2>
-            <div id="photoSliderContainer" class="w-full h-44 mt-6 rounded-2xl overflow-hidden border-2 border-fuchsia-500/30 flex items-center justify-center bg-black">
+            <div id="photoSliderContainer" class="w-full h-44 mt-6 rounded-2xl overflow-hidden border-2 border-fuchsia-500/30 flex items-center justify-center bg-black/50">
                 <p id="noPhotoText" class="text-[10px] text-gray-500 text-center p-2">Фото жіберілгенде осы жерде тірілей ауысып тұрады ✨</p>
-                <img id="liveImageDisplay" class="w-full h-full object-contain hidden transition-opacity duration-500" style="opacity: 1;">
+                <img id="liveImageDisplay" class="w-full h-full object-cover hidden transition-opacity duration-500" style="opacity: 1;">
             </div>
         </div>
     </div>
@@ -187,19 +178,28 @@ HTML_DASHBOARD = """
         new QRCode(document.getElementById("qrcode"), { text: phoneUrl, width: 85, height: 85 });
 
         const djBall = document.getElementById('djBall');
+        const ticker = document.getElementById('ticker');
         const currentPlaying = document.getElementById('currentPlaying');
         const queueVisualList = document.getElementById('queueVisualList');
         const ballStatus = document.getElementById('ballStatus');
         const bpmText = document.getElementById('bpmText');
         const audioPlayer = document.getElementById('localAudioPlayer');
+        const totalVotesCount = document.getElementById('totalVotesCount');
         const liveImageDisplay = document.getElementById('liveImageDisplay');
         const noPhotoText = document.getElementById('noPhotoText');
 
         let beatInterval = null;
+        let audioPermissionGranted = false;
         let isPlaying = false;
         let serverQueueList = [];
         let globalPhotos = [];
         let currentPhotoIndex = 0;
+
+        function forceInitAudio() {
+            audioPermissionGranted = true;
+            ticker.innerText = "🎵 ДЫБЫСТЫҚ ЖҮЙЕ БЕЛСЕНДІ!";
+            ticker.style.color = "#10b981";
+        }
 
         async function fetchVotes() {
             try {
@@ -212,18 +212,14 @@ HTML_DASHBOARD = """
                 updateQueueUI(data.queue);
                 updatePhotoSlider(); 
 
-                // ✨ ДЫБЫСТЫ ТІКЕЛЕЙ РЕТТЕУ (ЕШҚАНДАЙ СҮЗГІСІЗ, ҚАУІПСІЗ)
-                if (data.volume !== undefined && data.volume !== null) {
-                    audioPlayer.volume = parseFloat(data.volume);
-                }
-
                 if (!isPlaying && data.queue.length > 0) {
                     startNextFromQueue();
                 }
-            } catch (e) { console.log("Дерек алу қатесі"); }
+            } catch (e) {
+                console.log("Дерек алу қатесі");
+            }
         }
-        // Сұраныс жиілігі 1 секунд — бұл серверді қорғайды
-        setInterval(fetchVotes, 1000); 
+        setInterval(fetchVotes, 1000);
 
         function updatePhotoSlider() {
             if (globalPhotos.length === 0) {
@@ -256,8 +252,12 @@ HTML_DASHBOARD = """
 
                 if (result.status === "popped") {
                     playLocalTrack(result.song);
-                } else { isPlaying = false; }
-            } catch(err) { isPlaying = false; }
+                } else {
+                    isPlaying = false;
+                }
+            } catch(err) {
+                isPlaying = false;
+            }
         }
 
         document.addEventListener('keydown', function(event) {
@@ -272,6 +272,7 @@ HTML_DASHBOARD = """
             audioPlayer.pause();
             audioPlayer.src = "";
             if (beatInterval) clearInterval(beatInterval);
+
             isPlaying = false; 
 
             if (serverQueueList.length > 0) {
@@ -286,31 +287,33 @@ HTML_DASHBOARD = """
         }
 
         function playLocalTrack(songKey) {
-            let fileTarget = "shashlyndos"; 
+            let fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
-            if (songKey === "истерика") { fileTarget = "isterika"; displayName = "Джиос - Истерика"; }
-            else if (songKey === "девочка") { fileTarget = "devochka"; displayName = "Ханза - Девочка (Remix)"; }
-            else if (songKey === "ворона") { fileTarget = "vorona"; displayName = "Кэнни - Ворона"; }
-            else if (songKey === "глаза") { fileTarget = "glaza"; displayName = "Лейтинк - Твои глаза"; }
-            else if (songKey === "ню") { fileTarget = "nu"; displayName = "НЮ - Не получается"; }
-            else if (songKey === "пломбир") { fileTarget = "plombir"; displayName = "RASA - Пломбир"; }
-            else if (songKey === "любовь") { fileTarget = "lubov"; displayName = "Никита & Мария - Все слова о любви"; }
+            if (songKey === "истерика") { fileTarget = encodeURIComponent("Истерика (Джиос)"); displayName = "Джиос - Истерика"; }
+            else if (songKey === "девочка") { fileTarget = encodeURIComponent("Девочка (Remix)"); displayName = "Ханза - Девочка (Remix)"; }
+            else if (songKey === "ворона") { fileTarget = encodeURIComponent("Ворона (Кэнни)"); displayName = "Кэнни - Ворона"; }
+            else if (songKey === "глаза") { fileTarget = encodeURIComponent("Твои глаза (Лейтинк)"); displayName = "Лейтинк - Твои глаза"; }
+            else if (songKey === "ню") { fileTarget = encodeURIComponent("Не получается (НЮ)"); displayName = "НЮ - Не получается"; }
+            else if (songKey === "пломбир") { fileTarget = encodeURIComponent("Пломбир (RASA)"); displayName = "RASA - Пломбир"; }
+            else if (songKey === "любовь") { fileTarget = encodeURIComponent("Все слова о любви"); displayName = "Никита & Мария - Все слова о любви"; }
 
             currentPlaying.innerText = displayName.toUpperCase();
             ballStatus.innerText = "LIVE PLAYING";
-            bpmText.innerText = "🥁 ИНТЕРАКТИВ";
+            bpmText.innerText = "🥁 ФОТО СЛАЙДЕР";
             djBall.style.backgroundColor = '#06b6d4';
             djBall.style.boxShadow = '0 0 50px #00f0ff';
 
-            // Сенің өз папкаңнан таза шақыру
             audioPlayer.src = window.location.origin + "/static/" + fileTarget + ".mp3";
             audioPlayer.load();
 
             let playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
-                playPromise.then(_ => { console.log("Ойнап тұр!"); }).catch(error => {
-                    console.log("Браузер блоктады, бірақ секунд кетіп жатыр");
+                playPromise.then(_ => {
+                    console.log("Ойнап жатыр");
+                }).catch(error => {
+                    isPlaying = false;
+                    skipTrack(); 
                 });
             }
 
