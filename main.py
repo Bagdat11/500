@@ -4,17 +4,24 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import os
 import base64
+from typing import Optional
 from templates import HTML_DASHBOARD, HTML_CONTROLLER
 
 app = FastAPI()
 
+# Статикалық файлдарға арналған папканы тексеру
+if not os.path.exists("static"):
+    os.makedirs("static")
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Ортақ мәліметтер қоймасы (Кезек, Фотолар және Микшер)
 live_queue = {
     "queue": [],
     "total_clicks": 0,
     "photos": [],
-    "истерика": 0, "девочка": 0, "ворона": 0, "глаза": 0, "любовь": 0, "ню": 0, "пломбир": 0, "шашлындос": 0
+    "истерика": 0, "девочка": 0, "ворона": 0, "глаза": 0, "любовь": 0, "ню": 0, "пломбир": 0, "шашлындос": 0,
+    "mixer": {"bass": 0, "volume": 1.0}  # Микшердің бастапқы деңгейі
 }
 
 
@@ -28,10 +35,18 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 📱 ЖАҢАРТЫЛҒАН API: Ән мен Фотоны бөлек те, бірге де қабылдай береді
+# 📱 API: Телефоннан микшер параметрлерін қабылдау
+@app.post("/update_mixer")
+async def update_mixer(data: dict):
+    live_queue["mixer"]["bass"] = data.get("bass", 0)
+    live_queue["mixer"]["volume"] = data.get("volume", 1.0)
+    return JSONResponse(content={"status": "success", "mixer": live_queue["mixer"]})
+
+
+# 📱 API: Ән және Фото қабылдау
 @app.post("/vote")
-async def text_vote(title: str = Form(None), photo: UploadFile = File(None)):
-    # 1. Егер фото жіберілсе, оны әнге қарамастан бірден RAM-ға сақтаймыз
+async def text_vote(title: Optional[str] = Form(None), photo: Optional[UploadFile] = File(None)):
+    # 1. Фото келсе өңдеу
     if photo:
         try:
             contents = await photo.read()
@@ -42,7 +57,7 @@ async def text_vote(title: str = Form(None), photo: UploadFile = File(None)):
         except Exception as e:
             print("Сурет өңдеу қатесі:", e)
 
-    # 2. Егер ән аты жазылса, оны кезекке тұрғызамыз
+    # 2. Ән келсе кезекке қосу
     if title and title.strip() != "":
         clean_title = title.lower().strip()
         final_key = "шашлындос"
@@ -70,11 +85,10 @@ async def text_vote(title: str = Form(None), photo: UploadFile = File(None)):
 
         return JSONResponse(content={"status": "success", "type": "song_added", "matched": final_key})
 
-    # Тек фото кеткен кездегі жауап
     if photo:
         return JSONResponse(content={"status": "success", "type": "photo_added"})
 
-    return JSONResponse(content={"status": "error", "message": "Ештеңе жіберілеген жоқ"})
+    return JSONResponse(content={"status": "error", "message": "Ештеңе жіберілмеді"})
 
 
 @app.get("/get_votes")
