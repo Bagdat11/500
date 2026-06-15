@@ -14,13 +14,12 @@ if not os.path.exists("static"):
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Ортақ деректер базасы
+# Ортақ мәліметтер
 live_queue = {
     "queue": [],
     "total_clicks": 0,
     "photos": [],
     "истерика": 0, "девочка": 0, "ворона": 0, "глаза": 0, "любовь": 0, "ню": 0, "пломбир": 0, "шашлындос": 0,
-    "bass": 0,  # Телефоннан келетін басс мәні
     "volume": 1.0  # Телефоннан келетін дауыс мәні
 }
 
@@ -35,15 +34,13 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 🎛️ МИКШЕР СИГНАЛДАРЫН СЕРВЕРГЕ ЖАЗУ API
 @app.post("/update_mixer")
 async def update_mixer(data: dict):
-    live_queue["bass"] = int(data.get("bass", 0))
+    # Телефоннан тек дауыс деңгейін тікелей аламыз
     live_queue["volume"] = float(data.get("volume", 1.0))
     return JSONResponse(content={"status": "success"})
 
 
-# 📱 ӘН ЖӘНЕ ФОТО ЖІБЕРУ API
 @app.post("/vote")
 async def text_vote(title: Optional[str] = Form(None), photo: Optional[UploadFile] = File(None)):
     if photo:
