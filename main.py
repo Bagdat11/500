@@ -9,20 +9,19 @@ from templates import HTML_DASHBOARD, HTML_CONTROLLER
 
 app = FastAPI()
 
-# Статикалық файлдар папкасын тексеру
 if not os.path.exists("static"):
     os.makedirs("static")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Ортақ мәліметтер базасы
+# Ортақ деректер қоймасы
 live_queue = {
     "queue": [],
     "total_clicks": 0,
     "photos": [],
     "истерика": 0, "девочка": 0, "ворона": 0, "глаза": 0, "любовь": 0, "ню": 0, "пломбир": 0, "шашлындос": 0,
-    "bass": 0,  # Бастапқы басс
-    "volume": 1.0  # Бастапқы дыбыс деңгейі
+    "bass": 0,
+    "volume": 1.0
 }
 
 
@@ -36,7 +35,6 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 🎛️ МИКШЕРДІ ЖАҢАРТУ API (Жеңілдетілген нұсқасы)
 @app.post("/update_mixer")
 async def update_mixer(data: dict):
     live_queue["bass"] = int(data.get("bass", 0))
@@ -44,7 +42,6 @@ async def update_mixer(data: dict):
     return JSONResponse(content={"status": "success"})
 
 
-# 📱 ДАУЫС БЕРУ ЖӘНЕ ФОТО ЖІБЕРУ API
 @app.post("/vote")
 async def text_vote(title: Optional[str] = Form(None), photo: Optional[UploadFile] = File(None)):
     if photo:

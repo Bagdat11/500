@@ -31,11 +31,11 @@ HTML_CONTROLLER = """
     </div>
 
     <div class="bg-slate-900/80 border border-cyan-500/20 p-3 rounded-2xl space-y-3 shadow-xl">
-        <h3 class="text-[11px] font-black text-cyan-400 uppercase text-left tracking-wider">🎛️ VIRTUAL DJ MIXER (LIVE CONTROL)</h3>
+        <h3 class="text-[11px] font-black text-cyan-400 uppercase text-left tracking-wider">🎛️ VIRTUAL DJ MIXER</h3>
 
         <div class="flex flex-col gap-1">
             <div class="flex justify-between text-[10px] font-bold text-gray-400">
-                <span>🔊 BASS (БАС КҮШЕЙТУ)</span>
+                <span>🔊 BASS EFFECT</span>
                 <span id="bass_num" class="text-fuchsia-400">0 dB</span>
             </div>
             <input type="range" id="bass_slider" min="-10" max="25" value="0" step="1" oninput="sendMixerChange()" 
@@ -44,7 +44,7 @@ HTML_CONTROLLER = """
 
         <div class="flex flex-col gap-1">
             <div class="flex justify-between text-[10px] font-bold text-gray-400">
-                <span>🎚️ MASTER VOLUME</span>
+                <span>🎚️ VOLUME CONTROL</span>
                 <span id="vol_num" class="text-cyan-400">100%</span>
             </div>
             <input type="range" id="vol_slider" min="0" max="2" value="1" step="0.1" oninput="sendMixerChange()" 
@@ -160,11 +160,11 @@ HTML_DASHBOARD = """
         </div>
 
         <div class="flex flex-col items-center justify-center relative h-64">
-            <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-yellow-300 tracking-wide" style="cursor: pointer;" onclick="forceInitAudio()">
-                🚨 ДЫБЫСТЫ ҚОСУ ҮШІН ОСЫ ЖЕРДІ 1 РЕТ БАСЫҢЫЗ!
+            <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-emerald-400 tracking-wide">
+                🌐 TALDYK INTERACTIVE DJ SYSTEM ACTIVE
             </div>
 
-            <audio id="localAudioPlayer" crossorigin="anonymous"></audio>
+            <audio id="localAudioPlayer" controls class="hidden"></audio>
 
             <div id="djBall" class="w-32 h-32 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center transition-all duration-75 text-center p-2 mt-4">
                 <span id="ballStatus" class="text-[10px] font-black text-gray-500 uppercase">КҮТУДЕ</span>
@@ -201,7 +201,6 @@ HTML_DASHBOARD = """
         new QRCode(document.getElementById("qrcode"), { text: phoneUrl, width: 85, height: 85 });
 
         const djBall = document.getElementById('djBall');
-        const ticker = document.getElementById('ticker');
         const currentPlaying = document.getElementById('currentPlaying');
         const queueVisualList = document.getElementById('queueVisualList');
         const ballStatus = document.getElementById('ballStatus');
@@ -211,43 +210,10 @@ HTML_DASHBOARD = """
         const noPhotoText = document.getElementById('noPhotoText');
 
         let beatInterval = null;
-        let audioPermissionGranted = false;
         let isPlaying = false;
         let serverQueueList = [];
         let globalPhotos = [];
         let currentPhotoIndex = 0;
-
-        // МИКШЕР ЖҮЙЕСІ
-        let audioCtx = null;
-        let audioSource = null;
-        let bassFilter = null;
-        let gainNode = null;
-
-        function forceInitAudio() {
-            audioPermissionGranted = true;
-            ticker.innerText = "🎵 ДЫБЫСТЫҚ ЖҮЙЕ БЕЛСЕНДІ!";
-            ticker.style.color = "#10b981";
-
-            if(!audioCtx) {
-                try {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    audioSource = audioCtx.createMediaElementSource(audioPlayer);
-
-                    bassFilter = audioCtx.createBiquadFilter();
-                    bassFilter.type = "lowshelf";
-                    bassFilter.frequency.setValueAtTime(200, audioCtx.currentTime); 
-                    bassFilter.gain.setValueAtTime(0, audioCtx.currentTime);
-
-                    gainNode = audioCtx.createGain();
-                    gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
-
-                    audioSource.connect(bassFilter);
-                    bassFilter.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    console.log("Микшер дайын!");
-                } catch(e) { console.log("Аудио ояту қатесі", e); }
-            }
-        }
 
         async function fetchVotes() {
             try {
@@ -260,10 +226,9 @@ HTML_DASHBOARD = """
                 updateQueueUI(data.queue);
                 updatePhotoSlider(); 
 
-                // Дыбысты тірілей реттеу
-                if (audioCtx && bassFilter && gainNode) {
-                    bassFilter.gain.setValueAtTime(data.bass, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(data.volume, audioCtx.currentTime);
+                // 🎛️ ДЫБЫСТЫ ТЕЛЕФОННАН ТІКЕЛЕЙ БАСҚАРУ (ҚАТЕСІЗ ГАРАНТИЯ)
+                if (data.volume !== undefined) {
+                    audioPlayer.volume = data.volume;
                 }
 
                 if (!isPlaying && data.queue.length > 0) {
@@ -271,7 +236,7 @@ HTML_DASHBOARD = """
                 }
             } catch (e) { console.log("Дерек алу қатесі"); }
         }
-        setInterval(fetchVotes, 500); 
+        setInterval(fetchVotes, 1000); 
 
         function updatePhotoSlider() {
             if (globalPhotos.length === 0) {
@@ -347,20 +312,17 @@ HTML_DASHBOARD = """
 
             currentPlaying.innerText = displayName.toUpperCase();
             ballStatus.innerText = "LIVE PLAYING";
-            bpmText.innerText = "🥁 ФОТО СЛАЙДЕР";
+            bpmText.innerText = "🥁 ИНТЕРАКТИВ";
             djBall.style.backgroundColor = '#06b6d4';
             djBall.style.boxShadow = '0 0 50px #00f0ff';
 
             audioPlayer.src = window.location.origin + "/static/" + fileTarget + ".mp3";
             audioPlayer.load();
 
-            if(audioPermissionGranted) forceInitAudio();
-
             let playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
-                playPromise.then(_ => { console.log("Ойнап жатыр"); }).catch(error => {
-                    isPlaying = false;
-                    skipTrack(); 
+                playPromise.then(_ => { console.log("Ойнап тұр"); }).catch(error => {
+                    console.log("Автоматты қосылу блогы, күтуде...");
                 });
             }
 
