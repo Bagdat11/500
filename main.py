@@ -9,19 +9,19 @@ from templates import HTML_DASHBOARD, HTML_CONTROLLER
 
 app = FastAPI()
 
-# Статикалық файлдарға арналған папканы тексеру
 if not os.path.exists("static"):
     os.makedirs("static")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Ортақ мәліметтер қоймасы (Кезек, Фотолар және Микшер)
+# Деректер базасы (Микшер мәндері енді тікелей жаңарады)
 live_queue = {
     "queue": [],
     "total_clicks": 0,
     "photos": [],
     "истерика": 0, "девочка": 0, "ворона": 0, "глаза": 0, "любовь": 0, "ню": 0, "пломбир": 0, "шашлындос": 0,
-    "mixer": {"bass": 0, "volume": 1.0}  # Микшердің бастапқы деңгейі
+    "bass": 0,  # Басс деңгейі
+    "volume": 1.0  # Дыбыс деңгейі
 }
 
 
@@ -35,18 +35,17 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 📱 API: Телефоннан микшер параметрлерін қабылдау
+# 🎛️ МИКШЕР СИГНАЛЫН ҚАБЫЛДАУ (Жылдам әрі жеңілдетілген API)
 @app.post("/update_mixer")
 async def update_mixer(data: dict):
-    live_queue["mixer"]["bass"] = data.get("bass", 0)
-    live_queue["mixer"]["volume"] = data.get("volume", 1.0)
-    return JSONResponse(content={"status": "success", "mixer": live_queue["mixer"]})
+    live_queue["bass"] = data.get("bass", 0)
+    live_queue["volume"] = data.get("volume", 1.0)
+    return JSONResponse(content={"status": "success"})
 
 
-# 📱 API: Ән және Фото қабылдау
+# 📱 ӘН ЖӘНЕ ФОТО ЖІБЕРУ API
 @app.post("/vote")
 async def text_vote(title: Optional[str] = Form(None), photo: Optional[UploadFile] = File(None)):
-    # 1. Фото келсе өңдеу
     if photo:
         try:
             contents = await photo.read()
@@ -57,7 +56,6 @@ async def text_vote(title: Optional[str] = Form(None), photo: Optional[UploadFil
         except Exception as e:
             print("Сурет өңдеу қатесі:", e)
 
-    # 2. Ән келсе кезекке қосу
     if title and title.strip() != "":
         clean_title = title.lower().strip()
         final_key = "шашлындос"

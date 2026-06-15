@@ -6,7 +6,7 @@ HTML_CONTROLLER = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taldyk Summer - Бөлек Жіберу</title>
+    <title>Taldyk Summer - Басқару Панелі</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="h-screen bg-slate-950 text-white flex flex-col justify-between p-4 text-center select-none overflow-hidden">
@@ -44,7 +44,7 @@ HTML_CONTROLLER = """
 
         <div class="flex flex-col gap-1">
             <div class="flex justify-between text-[10px] font-bold text-gray-400">
-                <span>🎚️ MASTER VOLUME (ДЫБЫС ДЕҢГЕЙІ)</span>
+                <span>🎚️ MASTER VOLUME</span>
                 <span id="vol_num" class="text-cyan-400">100%</span>
             </div>
             <input type="range" id="vol_slider" min="0" max="2" value="1" step="0.1" oninput="sendMixerChange()" 
@@ -74,6 +74,7 @@ HTML_CONTROLLER = """
             document.getElementById('songInput').value = songName;
         }
 
+        // Микшер өзгерісін жіберу (жылдамдығы оңтайландырылды)
         async function sendMixerChange() {
             const bass = document.getElementById('bass_slider').value;
             const vol = document.getElementById('vol_slider').value;
@@ -191,7 +192,7 @@ HTML_DASHBOARD = """
             <div id="qrcode" class="p-1 bg-white rounded-lg"></div>
             <div class="text-left pr-4">
                 <h4 class="text-xs font-black uppercase tracking-wide text-slate-950">БАСҚАРУ МЕН СЕЛФИ</h4>
-                <p class="text-[9px] text-gray-600 mt-0.5 leading-tight">Сканерле де, әнді немесе фотоны бөлек жібер!</p>
+                <p class="text-[9px] text-gray-600 mt-0.5 leading-tight">Сканерле де, әнді немесе photo-ны бөлек жібер!</p>
             </div>
         </div>
     </footer>
@@ -217,7 +218,7 @@ HTML_DASHBOARD = """
         let globalPhotos = [];
         let currentPhotoIndex = 0;
 
-        // WEB AUDIO API СҮЗГІШТЕРІ
+        // МИКШЕР АЙНЫМАЛЫЛАРЫ
         let audioCtx = null;
         let audioSource = null;
         let bassFilter = null;
@@ -244,8 +245,8 @@ HTML_DASHBOARD = """
                     audioSource.connect(bassFilter);
                     bassFilter.connect(gainNode);
                     gainNode.connect(audioCtx.destination);
-                    console.log("Web Audio API Микшер дайын!");
-                } catch(e) { console.log("Аудио жүйені ояту қатесі", e); }
+                    console.log("Микшер дайын!");
+                } catch(e) { console.log("Аудио қатесі", e); }
             }
         }
 
@@ -260,10 +261,10 @@ HTML_DASHBOARD = """
                 updateQueueUI(data.queue);
                 updatePhotoSlider(); 
 
-                // Микшер параметрлерін тірілей қолдану
-                if (audioCtx && bassFilter && gainNode && data.mixer) {
-                    bassFilter.gain.setValueAtTime(data.mixer.bass, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(data.mixer.volume, audioCtx.currentTime);
+                // 🎛️ МИКШЕРДІҢ МӘНДЕРІН ТІРІЛЕЙ ҚАБЫЛДАУ ЖӘНЕ ДЫБЫСТЫ ӨЗГЕРТУ
+                if (audioCtx && bassFilter && gainNode) {
+                    bassFilter.gain.setValueAtTime(data.bass, audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(data.volume, audioCtx.currentTime);
                 }
 
                 if (!isPlaying && data.queue.length > 0) {
@@ -271,7 +272,7 @@ HTML_DASHBOARD = """
                 }
             } catch (e) { console.log("Дерек алу қатесі"); }
         }
-        setInterval(fetchVotes, 1000);
+        setInterval(fetchVotes, 500); // 🚀 Сұраныс жиілігі жақсартылды
 
         function updatePhotoSlider() {
             if (globalPhotos.length === 0) {
@@ -333,17 +334,18 @@ HTML_DASHBOARD = """
             }
         }
 
+        // ✨ ТҮЗЕТІЛДІ: ЛАТЫНША ЖӘНЕ НАҚТЫ ФАЙЛДАРДЫ ШАҚЫРУ ЖҮЙЕСІ
         function playLocalTrack(songKey) {
-            let fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); 
+            let fileTarget = "shashlyndos"; 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
-            if (songKey === "истерика") { fileTarget = encodeURIComponent("Истерика (Джиос)"); displayName = "Джиос - Истерика"; }
-            else if (songKey === "девочка") { fileTarget = encodeURIComponent("Девочка (Remix)"); displayName = "Ханза - Девочка (Remix)"; }
-            else if (songKey === "ворона") { fileTarget = encodeURIComponent("Ворона (Кэнни)"); displayName = "Кэнни - Ворона"; }
-            else if (songKey === "глаза") { fileTarget = encodeURIComponent("Твои глаза (Лейтинк)"); displayName = "Лейтинк - Твои глаза"; }
-            else if (songKey === "ню") { fileTarget = encodeURIComponent("Не получается (НЮ)"); displayName = "НЮ - Не получается"; }
-            else if (songKey === "пломбир") { fileTarget = encodeURIComponent("Пломбир (RASA)"); displayName = "RASA - Пломбир"; }
-            else if (songKey === "любовь") { fileTarget = encodeURIComponent("Все слова о любви"); displayName = "Никита & Мария - Все слова о любви"; }
+            if (songKey === "истерика") { fileTarget = "isterika"; displayName = "Джиос - Истерика"; }
+            else if (songKey === "девочка") { fileTarget = "devochka"; displayName = "Ханза - Девочка (Remix)"; }
+            else if (songKey === "ворона") { fileTarget = "vorona"; displayName = "Кэнни - Ворона"; }
+            else if (songKey === "глаза") { fileTarget = "glaza"; displayName = "Лейтинк - Твои глаза"; }
+            else if (songKey === "ню") { fileTarget = "nu"; displayName = "НЮ - Не получается"; }
+            else if (songKey === "пломбир") { fileTarget = "plombir"; displayName = "RASA - Пломбир"; }
+            else if (songKey === "любовь") { fileTarget = "lubov"; displayName = "Никита & Мария - Все слова о любви"; }
 
             currentPlaying.innerText = displayName.toUpperCase();
             ballStatus.innerText = "LIVE PLAYING";
