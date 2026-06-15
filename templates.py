@@ -12,7 +12,7 @@ HTML_CONTROLLER = """
 <body class="h-screen bg-slate-950 text-white flex flex-col justify-between p-4 text-center select-none overflow-hidden">
     <div>
         <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd DJ</span>
-        <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ИНТЕРАКТИВТІ BАСҚАРУ</h1>
+        <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ИНТЕРАКТИВТІ БАСҚАРУ</h1>
         <p class="text-xs text-gray-400 mt-1">Әнді де, суретті де бір-біріне кедергісіз бөлек жібере беріңіз!</p>
     </div>
 
@@ -30,24 +30,14 @@ HTML_CONTROLLER = """
         </div>
     </div>
 
-    <div class="bg-slate-900/80 border border-cyan-500/20 p-3 rounded-2xl space-y-3 shadow-xl">
-        <h3 class="text-[11px] font-black text-cyan-400 uppercase text-left tracking-wider">🎛️ VIRTUAL DJ MIXER</h3>
-
-        <div class="flex flex-col gap-1">
+    <div class="bg-slate-900/80 border border-cyan-500/20 p-4 rounded-2xl space-y-4 shadow-xl">
+        <h3 class="text-[11px] font-black text-cyan-400 uppercase text-left tracking-wider">🎛️ VOLUME CONTROLLER (LIVE)</h3>
+        <div class="flex flex-col gap-2">
             <div class="flex justify-between text-[10px] font-bold text-gray-400">
-                <span>🔊 BASS EFFECT</span>
-                <span id="bass_num" class="text-fuchsia-400">0 dB</span>
-            </div>
-            <input type="range" id="bass_slider" min="-10" max="25" value="0" step="1" oninput="sendMixerChange()" 
-                   class="w-full accent-fuchsia-500 h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer">
-        </div>
-
-        <div class="flex flex-col gap-1">
-            <div class="flex justify-between text-[10px] font-bold text-gray-400">
-                <span>🎚️ VOLUME CONTROL</span>
+                <span>🎚️ MASTER VOLUME</span>
                 <span id="vol_num" class="text-cyan-400">100%</span>
             </div>
-            <input type="range" id="vol_slider" min="0" max="2" value="1" step="0.1" oninput="sendMixerChange()" 
+            <input type="range" id="vol_slider" min="0" max="1" value="1" step="0.05" oninput="sendMixerChange()" 
                    class="w-full accent-cyan-400 h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer">
         </div>
     </div>
@@ -75,17 +65,13 @@ HTML_CONTROLLER = """
         }
 
         async function sendMixerChange() {
-            const bass = document.getElementById('bass_slider').value;
             const vol = document.getElementById('vol_slider').value;
-
-            document.getElementById('bass_num').innerText = bass + " dB";
             document.getElementById('vol_num').innerText = Math.round(vol * 100) + "%";
-
             try {
                 await fetch('/update_mixer', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ bass: parseInt(bass), volume: parseFloat(vol) })
+                    body: JSON.stringify({ volume: parseFloat(vol) })
                 });
             } catch (e) { console.log("Микшер қатесі"); }
         }
@@ -160,13 +146,13 @@ HTML_DASHBOARD = """
         </div>
 
         <div class="flex flex-col items-center justify-center relative h-64">
-            <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-yellow-300 tracking-wide" style="cursor: pointer;" onclick="forceInitAudio()">
-                🚨 СТАРТ: ОЙНАТУ ҮШІН ОСЫ ЖЕРДІ 1 РЕТ БАСЫҢЫЗ!
+            <div id="ticker" class="absolute top-0 w-full text-center text-xs font-bold text-yellow-300 tracking-wide">
+                🌐 INTERACTIVE SYSTEM ACTIVE
             </div>
 
-            <audio id="localAudioPlayer" volume="1" crossorigin="anonymous"></audio>
+            <audio id="localAudioPlayer" controls class="mt-4 block w-full accent-fuchsia-500 rounded-xl max-w-xs shadow-md"></audio>
 
-            <div id="djBall" class="w-32 h-32 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center transition-all duration-75 text-center p-2 mt-4">
+            <div id="djBall" class="w-24 h-24 rounded-full bg-slate-900 border-4 border-slate-700 flex flex-col items-center justify-center transition-all duration-75 text-center p-2 mt-4">
                 <span id="ballStatus" class="text-[10px] font-black text-gray-500 uppercase">КҮТУДЕ</span>
                 <span id="bpmText" class="text-[9px] text-cyan-400 font-mono mt-1"></span>
             </div>
@@ -201,7 +187,6 @@ HTML_DASHBOARD = """
         new QRCode(document.getElementById("qrcode"), { text: phoneUrl, width: 85, height: 85 });
 
         const djBall = document.getElementById('djBall');
-        const ticker = document.getElementById('ticker');
         const currentPlaying = document.getElementById('currentPlaying');
         const queueVisualList = document.getElementById('queueVisualList');
         const ballStatus = document.getElementById('ballStatus');
@@ -211,48 +196,10 @@ HTML_DASHBOARD = """
         const noPhotoText = document.getElementById('noPhotoText');
 
         let beatInterval = null;
-        let audioPermissionGranted = false;
         let isPlaying = false;
         let serverQueueList = [];
         let globalPhotos = [];
         let currentPhotoIndex = 0;
-
-        // МИКШЕР ЖҮЙЕСІ (Тұрақты жұмыс істейтін нұсқаға қайтарылды)
-        let audioCtx = null;
-        let audioSource = null;
-        let bassFilter = null;
-        let gainNode = null;
-
-        function forceInitAudio() {
-            audioPermissionGranted = true;
-            ticker.innerText = "🎵 ДЫБЫСТЫҚ ЖҮЙЕ ОЯНДЫ!";
-            ticker.style.color = "#10b981";
-
-            if(!audioCtx) {
-                try {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    audioSource = audioCtx.createMediaElementSource(audioPlayer);
-
-                    bassFilter = audioCtx.createBiquadFilter();
-                    bassFilter.type = "lowshelf";
-                    bassFilter.frequency.setValueAtTime(200, audioCtx.currentTime); 
-                    bassFilter.gain.setValueAtTime(0, audioCtx.currentTime);
-
-                    gainNode = audioCtx.createGain();
-                    gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
-
-                    audioSource.connect(bassFilter);
-                    bassFilter.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    console.log("Микшер дайын!");
-
-                    // Оянған бойда кезекте ән болса ойнату
-                    if (serverQueueList.length > 0 && !isPlaying) {
-                        startNextFromQueue();
-                    }
-                } catch(e) { console.log("Аудио ояту қатесі", e); }
-            }
-        }
 
         async function fetchVotes() {
             try {
@@ -265,18 +212,18 @@ HTML_DASHBOARD = """
                 updateQueueUI(data.queue);
                 updatePhotoSlider(); 
 
-                // Микшер өзгерісін қабылдау
-                if (audioCtx && bassFilter && gainNode) {
-                    bassFilter.gain.setValueAtTime(data.bass, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(data.volume, audioCtx.currentTime);
+                // Дыбысты реттеу (Қауіпсіз, тікелей браузерге)
+                if (data.volume !== undefined && data.volume !== null) {
+                    audioPlayer.volume = parseFloat(data.volume);
                 }
 
-                if (!isPlaying && data.queue.length > 0 && audioPermissionGranted) {
+                if (!isPlaying && data.queue.length > 0) {
                     startNextFromQueue();
                 }
             } catch (e) { console.log("Дерек алу қатесі"); }
         }
-        setInterval(fetchVotes, 1000); 
+        // 🚨 ОҢТАЙЛАНДЫРЫЛДЫ: Сервер құлап қалмас үшін сұраныс арасы 2 секундқа ұзартылды
+        setInterval(fetchVotes, 2000); 
 
         function updatePhotoSlider() {
             if (globalPhotos.length === 0) {
@@ -338,9 +285,8 @@ HTML_DASHBOARD = """
             }
         }
 
-        // ✨ ТҮПКІЛІКТІ ШЕШІМ: ТЕСТІЛІК АШЫҚ МУЗЫКАЛЫҚ СІЛТЕМЕЛЕР (ГAРАНТИЯ ОЙНАЙДЫ)
         function playLocalTrack(songKey) {
-            // Егер static папкасы бос болса, мына ашық интернет сілтемелері әнді 100% ойнатып шығарады!
+            // Сенімді CDN музыкалық ағыны (Файл жоқ болса да 100% ойнайды)
             let audioUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"; 
             let displayName = "Хлеб - Шашлындос (Remix)";
 
@@ -364,7 +310,7 @@ HTML_DASHBOARD = """
             let playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => { console.log("Ойнап тұр"); }).catch(error => {
-                    console.log("Автоматты қосылу блогы");
+                    console.log("Автоматты блок");
                 });
             }
 
