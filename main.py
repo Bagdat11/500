@@ -9,19 +9,20 @@ from templates import HTML_DASHBOARD, HTML_CONTROLLER
 
 app = FastAPI()
 
+# Статикалық файлдар папкасын тексеру
 if not os.path.exists("static"):
     os.makedirs("static")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Деректер базасы (Микшер мәндері енді тікелей жаңарады)
+# Ортақ мәліметтер базасы
 live_queue = {
     "queue": [],
     "total_clicks": 0,
     "photos": [],
     "истерика": 0, "девочка": 0, "ворона": 0, "глаза": 0, "любовь": 0, "ню": 0, "пломбир": 0, "шашлындос": 0,
-    "bass": 0,  # Басс деңгейі
-    "volume": 1.0  # Дыбыс деңгейі
+    "bass": 0,  # Бастапқы басс
+    "volume": 1.0  # Бастапқы дыбыс деңгейі
 }
 
 
@@ -35,15 +36,15 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 🎛️ МИКШЕР СИГНАЛЫН ҚАБЫЛДАУ (Жылдам әрі жеңілдетілген API)
+# 🎛️ МИКШЕРДІ ЖАҢАРТУ API (Жеңілдетілген нұсқасы)
 @app.post("/update_mixer")
 async def update_mixer(data: dict):
-    live_queue["bass"] = data.get("bass", 0)
-    live_queue["volume"] = data.get("volume", 1.0)
+    live_queue["bass"] = int(data.get("bass", 0))
+    live_queue["volume"] = float(data.get("volume", 1.0))
     return JSONResponse(content={"status": "success"})
 
 
-# 📱 ӘН ЖӘНЕ ФОТО ЖІБЕРУ API
+# 📱 ДАУЫС БЕРУ ЖӘНЕ ФОТО ЖІБЕРУ API
 @app.post("/vote")
 async def text_vote(title: Optional[str] = Form(None), photo: Optional[UploadFile] = File(None)):
     if photo:

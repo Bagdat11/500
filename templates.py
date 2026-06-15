@@ -74,7 +74,6 @@ HTML_CONTROLLER = """
             document.getElementById('songInput').value = songName;
         }
 
-        // Микшер өзгерісін жіберу (жылдамдығы оңтайландырылды)
         async function sendMixerChange() {
             const bass = document.getElementById('bass_slider').value;
             const vol = document.getElementById('vol_slider').value;
@@ -86,7 +85,7 @@ HTML_CONTROLLER = """
                 await fetch('/update_mixer', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ bass: parseFloat(bass), volume: parseFloat(vol) })
+                    body: JSON.stringify({ bass: parseInt(bass), volume: parseFloat(vol) })
                 });
             } catch (e) { console.log("Микшер қатесі"); }
         }
@@ -192,7 +191,7 @@ HTML_DASHBOARD = """
             <div id="qrcode" class="p-1 bg-white rounded-lg"></div>
             <div class="text-left pr-4">
                 <h4 class="text-xs font-black uppercase tracking-wide text-slate-950">БАСҚАРУ МЕН СЕЛФИ</h4>
-                <p class="text-[9px] text-gray-600 mt-0.5 leading-tight">Сканерле де, әнді немесе photo-ны бөлек жібер!</p>
+                <p class="text-[9px] text-gray-600 mt-0.5 leading-tight">Сканерле де, әнді немесе фотоны бөлек жібер!</p>
             </div>
         </div>
     </footer>
@@ -218,7 +217,7 @@ HTML_DASHBOARD = """
         let globalPhotos = [];
         let currentPhotoIndex = 0;
 
-        // МИКШЕР АЙНЫМАЛЫЛАРЫ
+        // МИКШЕР ЖҮЙЕСІ
         let audioCtx = null;
         let audioSource = null;
         let bassFilter = null;
@@ -246,7 +245,7 @@ HTML_DASHBOARD = """
                     bassFilter.connect(gainNode);
                     gainNode.connect(audioCtx.destination);
                     console.log("Микшер дайын!");
-                } catch(e) { console.log("Аудио қатесі", e); }
+                } catch(e) { console.log("Аудио ояту қатесі", e); }
             }
         }
 
@@ -261,7 +260,7 @@ HTML_DASHBOARD = """
                 updateQueueUI(data.queue);
                 updatePhotoSlider(); 
 
-                // 🎛️ МИКШЕРДІҢ МӘНДЕРІН ТІРІЛЕЙ ҚАБЫЛДАУ ЖӘНЕ ДЫБЫСТЫ ӨЗГЕРТУ
+                // Дыбысты тірілей реттеу
                 if (audioCtx && bassFilter && gainNode) {
                     bassFilter.gain.setValueAtTime(data.bass, audioCtx.currentTime);
                     gainNode.gain.setValueAtTime(data.volume, audioCtx.currentTime);
@@ -272,7 +271,7 @@ HTML_DASHBOARD = """
                 }
             } catch (e) { console.log("Дерек алу қатесі"); }
         }
-        setInterval(fetchVotes, 500); // 🚀 Сұраныс жиілігі жақсартылды
+        setInterval(fetchVotes, 500); 
 
         function updatePhotoSlider() {
             if (globalPhotos.length === 0) {
@@ -334,7 +333,6 @@ HTML_DASHBOARD = """
             }
         }
 
-        // ✨ ТҮЗЕТІЛДІ: ЛАТЫНША ЖӘНЕ НАҚТЫ ФАЙЛДАРДЫ ШАҚЫРУ ЖҮЙЕСІ
         function playLocalTrack(songKey) {
             let fileTarget = "shashlyndos"; 
             let displayName = "Хлеб - Шашлындос (Remix)";
