@@ -155,9 +155,9 @@ HTML_DASHBOARD = """
 
         <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-3xl space-y-4 flex flex-col items-center justify-center h-64 relative">
             <h2 class="text-xs font-black text-cyan-400 tracking-wider uppercase border-b border-slate-800 pb-1 w-full text-left absolute top-4 left-4">📸 ЗАЛДАН ТІКЕЛЕЙ ФОТО:</h2>
-            <div id="photoSliderContainer" class="w-full h-44 mt-6 rounded-2xl overflow-hidden border-2 border-fuchsia-500/30 flex items-center justify-center bg-black">
+            <div id="photoSliderContainer" class="w-full h-44 mt-6 rounded-2xl overflow-hidden border-2 border-fuchsia-500/30 flex items-center justify-center bg-black/50">
                 <p id="noPhotoText" class="text-[10px] text-gray-500 text-center p-2">Фото жіберілгенде осы жерде тірілей ауысып тұрады ✨</p>
-                <img id="liveImageDisplay" class="w-full h-full object-contain hidden transition-opacity duration-500" style="opacity: 1;">
+                <img id="liveImageDisplay" class="w-full h-full object-cover hidden transition-opacity duration-500" style="opacity: 1;">
             </div>
         </div>
     </div>
@@ -219,7 +219,7 @@ HTML_DASHBOARD = """
                 console.log("Дерек алу қатесі");
             }
         }
-        setInterval(fetchVotes, 1000);
+        setInterval(fetchVotes, 3000);
 
         function updatePhotoSlider() {
             if (globalPhotos.length === 0) {
