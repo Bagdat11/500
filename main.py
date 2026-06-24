@@ -17,7 +17,7 @@ if not os.path.exists("static"):
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-# 📍 СЕНІҢ ТЕЛЕГРАМ API КІЛТТЕРІҢ (Жаңағы скриншоттағы мәліметтер):
+# 📍 СЕНІҢ ТЕЛЕГРАМ API КІЛТТЕРІҢ:
 API_ID = 36888932  # Сенің App api_id
 API_HASH = "a6e4e6865bccc91bac566230d6bf5298"  # Сенің App api_hash
 CHANNEL_USERNAME = "@taldyk_music_box"
@@ -63,7 +63,7 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 🔍 ТЕЛЕГРАМ КАНАЛДАН МУЗЫКА ІЗДЕП, ЖҮКТЕУ РОУТЕРІ
+# 🔍 ТЕЛЕГРАМ КАНАЛДАН МУЗЫКА ІЗДЕП, ЖҮКТЕУ РОУТЕРІ (ӘМБЕБАП НҰСҚА)
 @app.post("/search_music")
 async def search_music(query: str = Form(...)):
     if not query.strip():
@@ -72,14 +72,28 @@ async def search_music(query: str = Form(...)):
         )
 
     try:
-        # Каналыңдағы соңғы 300 посттың ішінен аудио файлдарды іздейді
+        # Каналыңдағы соңғы 300 посттың ішінен файлдарды іздейді
         async for message in client.iter_messages(CHANNEL_USERNAME, limit=300):
-            if message.audio:
-                title = message.audio.title or ""
-                performer = message.audio.performer or ""
+            # Тексеріс: аудио немесе .mp3 форматындағы кәдімгі құжат (document) болуы керек
+            is_audio = message.audio
+            is_mp3_doc = (
+                message.document
+                and message.file
+                and message.file.name
+                and message.file.name.lower().endswith(".mp3")
+            )
+
+            if is_audio or is_mp3_doc:
+                title = ""
+                performer = ""
                 file_name = message.file.name or ""
 
-                # Әннің атын, авторын немесе файл атын толық тексеру
+                # Егер ресми аудио объектісі болса, метадеректерін аламыз
+                if message.audio:
+                    title = message.audio.title or ""
+                    performer = message.audio.performer or ""
+
+                # Әннің атын, авторын немесе файл атын толық кіші әріпке келтіріп тексереміз
                 full_text = f"{title} {performer} {file_name}".lower()
 
                 if query.lower().strip() in full_text:
@@ -91,8 +105,13 @@ async def search_music(query: str = Form(...)):
                             if c.isalpha() or c.isdigit() or c in "._- "
                         ]
                     ).strip()
+
                     if not sanitized_name:
                         sanitized_name = f"{query.strip()}.mp3"
+
+                    # Файл аты міндетті түрде .mp3-пен аяқталуын қадағалаймыз
+                    if not sanitized_name.lower().endswith(".mp3"):
+                        sanitized_name += ".mp3"
 
                     file_path = os.path.join("static", sanitized_name)
 
