@@ -63,7 +63,7 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 🔍 ТЕЛЕГРАМ КАНАЛДАН МУЗЫКА ІЗДЕП, ЖҮКТЕУ РОУТЕРІ (ӘМБЕБАП НҰСҚА)
+# 🔍 ТЕЛЕГРАМ КАНАЛДАН МУЗЫКА ІЗДЕП, ЖҮКТЕУ РОУТЕРІ (ҚАТЕСІЗ СЕНІМДІ НҰСҚА)
 @app.post("/search_music")
 async def search_music(query: str = Form(...)):
     if not query.strip():
@@ -72,61 +72,39 @@ async def search_music(query: str = Form(...)):
         )
 
     try:
-        # Каналыңдағы соңғы 300 посттың ішінен файлдарды іздейді
+        # Каналыңдағы соңғы 300 хабарламаны тексереді
         async for message in client.iter_messages(CHANNEL_USERNAME, limit=300):
-            # Тексеріс: аудио немесе .mp3 форматындағы кәдімгі құжат (document) болуы керек
-            is_audio = message.audio
-            is_mp3_doc = (
-                message.document
-                and message.file
-                and message.file.name
-                and message.file.name.lower().endswith(".mp3")
-            )
+            # Егер хабарламада кез келген файл (файл аты бар нәрсе) болса
+            if message.file and message.file.name:
+                file_name = message.file.name.lower()
 
-            if is_audio or is_mp3_doc:
-                title = ""
-                performer = ""
-                file_name = message.file.name or ""
-
-                # Егер ресми аудио объектісі болса, метадеректерін аламыз
-                if message.audio:
-                    title = message.audio.title or ""
-                    performer = message.audio.performer or ""
-
-                # Әннің атын, авторын немесе файл атын толық кіші әріпке келтіріп тексереміз
-                full_text = f"{title} {performer} {file_name}".lower()
-
-                if query.lower().strip() in full_text:
-                    # Ән табылса, оның атын қауіпсіз форматқа келтіреміз
+                # Тек қана .mp3 файлдарын және қолданушы іздеген сөзді тексереміз
+                if file_name.endswith(".mp3") and (
+                    query.lower().strip() in file_name
+                ):
+                    # Файл атын қауіпсіз форматқа келтіру (бос орын, сызықшаларды қалдырып)
                     sanitized_name = "".join(
                         [
                             c
-                            for c in file_name
+                            for c in message.file.name
                             if c.isalpha() or c.isdigit() or c in "._- "
                         ]
                     ).strip()
 
-                    if not sanitized_name:
-                        sanitized_name = f"{query.strip()}.mp3"
-
-                    # Файл аты міндетті түрде .mp3-пен аяқталуын қадағалаймыз
-                    if not sanitized_name.lower().endswith(".mp3"):
-                        sanitized_name += ".mp3"
-
                     file_path = os.path.join("static", sanitized_name)
 
-                    # Егер бұл әнді біреу бұрын жүктеген болса, қайта жүктеп уақыт құртпаймыз
+                    # Серверге жүктейміз
                     if not os.path.exists(file_path):
                         await message.download_media(file=file_path)
 
-                    # Әннің файл атын үлкен экран ойнатуы үшін кезекке қосамыз
+                    # Экран кезегіне қосамыз
                     live_queue["queue"].append(sanitized_name)
                     live_queue["total_clicks"] += 1
 
                     return JSONResponse(
                         content={
                             "status": "success",
-                            "message": f"Ән табылды және кезекке қосылды: {sanitized_name}",
+                            "message": f"Ән табылды: {sanitized_name}",
                         }
                     )
 
