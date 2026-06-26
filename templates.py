@@ -6,10 +6,10 @@ HTML_CONTROLLER = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taldyk Summer - Басқару Панелі</title>
+    <title>Taldyk Summer - Бөлек Жіберу</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-slate-950 text-white flex flex-col p-6 text-center select-none overflow-y-auto min-h-screen justify-between gap-6">
+<body class="h-screen bg-slate-950 text-white flex flex-col justify-between p-6 text-center select-none overflow-hidden">
     <div>
         <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd DJ</span>
         <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ИНТЕРАКТИВТІ БАСҚАРУ</h1>
@@ -17,7 +17,7 @@ HTML_CONTROLLER = """
     </div>
 
     <div class="bg-slate-900/40 border border-slate-800/60 p-3 rounded-2xl">
-        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block text-left mb-2">✨ Тез таңдау (Дайын әндер):</span>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block text-left mb-2">✨ Папкадағы дайын әндер (Басыңыз):</span>
         <div class="flex flex-wrap gap-2 justify-start">
             <button onclick="selectSong('Шашлындос')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🍖 Шашлындос</button>
             <button onclick="selectSong('Истерика')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">😭 Истерика</button>
@@ -30,31 +30,23 @@ HTML_CONTROLLER = """
         </div>
     </div>
 
-    <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl">
-        <h3 class="text-xs font-bold text-yellow-400 uppercase text-left">🔎 Каналдан ән іздеу (Эксклюзив):</h3>
-        <div class="flex gap-2">
-            <input type="text" id="musicQuery" placeholder="Ән атын немесе авторын жазыңыз..." 
-                   class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-yellow-400">
-            <button onclick="searchTelegramMusic()" class="bg-yellow-500 hover:bg-yellow-600 text-black font-black px-4 rounded-xl text-xs uppercase tracking-wider">
-                ІЗДЕУ
-            </button>
-        </div>
-        <p id="searchStatus" class="text-[11px] font-bold text-gray-400 text-left min-h-[16px] pl-1"></p>
-    </div>
-
-    <div class="space-y-4">
-        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl hidden">
+    <div class="space-y-4 my-auto">
+        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl">
             <h3 class="text-xs font-bold text-fuchsia-400 uppercase text-left">🎼 1. Ән таңдау:</h3>
             <div class="flex gap-2">
-                <input type="text" id="songInput" placeholder="Жоғарыдан таңдаңыз..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none">
-                <button onclick="sendSong()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-black font-black px-4 rounded-xl text-xs uppercase tracking-wider">ҚОСУ</button>
+                <input type="text" id="songInput" placeholder="Жоғарыдан таңдаңыз немесе жазыңыз..." 
+                       class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fuchsia-400">
+                <button onclick="sendSong()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-black font-black px-4 rounded-xl text-xs uppercase tracking-wider">
+                    ҚОСУ
+                </button>
             </div>
         </div>
 
         <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl">
-            <h3 class="text-xs font-bold text-cyan-400 uppercase text-left">📸 Залдан Селфи (Фото):</h3>
+            <h3 class="text-xs font-bold text-cyan-400 uppercase text-left">📸 2. Залдан Селфи (Фото):</h3>
             <div class="flex flex-col gap-2">
-                <input type="file" id="photoInput" accept="image/*" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs text-gray-400 focus:outline-none">
+                <input type="file" id="photoInput" accept="image/*"
+                       class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs text-gray-400 focus:outline-none">
                 <button onclick="sendPhoto()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-black py-2 rounded-xl text-xs uppercase tracking-wider">
                     📸 ЭКРАНҒА СУРЕТТІ ҰШЫРУ
                 </button>
@@ -69,12 +61,11 @@ HTML_CONTROLLER = """
     <script>
         function selectSong(songName) {
             document.getElementById('songInput').value = songName;
-            sendSong(); // Басқан кезде бірден кезекке жібереді
         }
 
         async function sendSong() {
             const songInput = document.getElementById('songInput');
-            if(!songInput.value.trim()) return;
+            if(!songInput.value.trim()) return alert("Ән атын жазыңыз!");
 
             try {
                 const formData = new FormData();
@@ -83,37 +74,10 @@ HTML_CONTROLLER = """
                 const response = await fetch('/vote', { method: 'POST', body: formData });
                 const result = await response.json();
                 if(result.status === "success") {
-                    alert(`"${songInput.value}" кезекке қосылды! 🎵`);
+                    alert(`"${songInput.value}" кезекке резервке қосылды! 🎵`);
                     songInput.value = '';
                 }
             } catch (error) { alert("Сервер жауап бермеді."); }
-        }
-
-        async function searchTelegramMusic() {
-            const query = document.getElementById("musicQuery").value.trim();
-            const statusTxt = document.getElementById("searchStatus");
-            if(!query) { alert("Ән атын жазыңыз!"); return; }
-
-            statusTxt.style.color = "#eab308";
-            statusTxt.innerText = "⏳ Telegram каналдан іздеу процесі жүріп жатыр...";
-
-            const formData = new FormData();
-            formData.append("query", query);
-
-            try {
-                const response = await fetch("/search_music", { method: "POST", body: formData });
-                const data = await response.json();
-                if(data.status === "success") {
-                    statusTxt.style.color = "#22c55e";
-                    statusTxt.innerText = "✅ Трек табылды және экран кезегіне қосылды!";
-                    document.getElementById("musicQuery").value = "";
-                } else {
-                    statusTxt.style.color = "#ef4444";
-                    statusTxt.innerText = "❌ " + data.message;
-                }
-            } catch(e) {
-                statusTxt.innerText = "Сервермен байланыс үзілді.";
-            }
         }
 
         async function sendPhoto() {
@@ -220,6 +184,7 @@ HTML_DASHBOARD = """
         const ballStatus = document.getElementById('ballStatus');
         const bpmText = document.getElementById('bpmText');
         const audioPlayer = document.getElementById('localAudioPlayer');
+        const totalVotesCount = document.getElementById('totalVotesCount');
         const liveImageDisplay = document.getElementById('liveImageDisplay');
         const noPhotoText = document.getElementById('noPhotoText');
 
@@ -254,7 +219,7 @@ HTML_DASHBOARD = """
                 console.log("Дерек алу қатесі");
             }
         }
-        setInterval(fetchVotes, 3000);
+        setInterval(fetchVotes, 1000);
 
         function updatePhotoSlider() {
             if (globalPhotos.length === 0) {
@@ -322,29 +287,20 @@ HTML_DASHBOARD = """
         }
 
         function playLocalTrack(songKey) {
-            let fileTarget = ""; 
-            let displayName = "";
+            let fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); 
+            let displayName = "Хлеб - Шашлындос (Remix)";
 
-            // 🌟 1. ТЕЛЕГРАМНАН ЖҮКТЕЛГЕН ТУРА ТРЕКТЕРДІ ОЙНАТУ ЛОГИКАСЫ:
-            if (songKey.endsWith(".mp3")) {
-                fileTarget = encodeURIComponent(songKey.replace(".mp3", ""));
-                displayName = songKey.replace(".mp3", "").replaceAll("_", " ");
-            } 
-            // 🌟 2. ЕСКІ 7-8 ДАЙЫН БАТЫРМАЛАРДЫҢ ЛОГИКАСЫ:
-            else {
-                if (songKey === "шашлындос") { fileTarget = encodeURIComponent("Шашлындос (Хлеб)"); displayName = "Хлеб - Шашлындос (Remix)"; }
-                else if (songKey === "истерика") { fileTarget = encodeURIComponent("Истерика (Джиос)"); displayName = "Джиос - Истерика"; }
-                else if (songKey === "девочка") { fileTarget = encodeURIComponent("Девочка (Remix)"); displayName = "Ханза - Девочка (Remix)"; }
-                else if (songKey === "ворона") { fileTarget = encodeURIComponent("Ворона (Кэнни)"); displayName = "Кэнни - Ворона"; }
-                else if (songKey === "глаза") { fileTarget = encodeURIComponent("Твои глаза (Лейтинк)"); displayName = "Лейтинк - Твои глаза"; }
-                else if (songKey === "ню") { fileTarget = encodeURIComponent("Не получается (НЮ)"); displayName = "НЮ - Не получается"; }
-                else if (songKey === "пломбир") { fileTarget = encodeURIComponent("Пломбир (RASA)"); displayName = "RASA - Пломбир"; }
-                else if (songKey === "любовь") { fileTarget = encodeURIComponent("Все слова о любви"); displayName = "Никита & Мария - Все слова о любви"; }
-            }
+            if (songKey === "истерика") { fileTarget = encodeURIComponent("Истерика (Джиос)"); displayName = "Джиос - Истерика"; }
+            else if (songKey === "девочка") { fileTarget = encodeURIComponent("Девочка (Remix)"); displayName = "Ханза - Девочка (Remix)"; }
+            else if (songKey === "ворона") { fileTarget = encodeURIComponent("Ворона (Кэнни)"); displayName = "Кэнни - Ворона"; }
+            else if (songKey === "глаза") { fileTarget = encodeURIComponent("Твои глаза (Лейтинк)"); displayName = "Лейтинк - Твои глаза"; }
+            else if (songKey === "ню") { fileTarget = encodeURIComponent("Не получается (НЮ)"); displayName = "НЮ - Не получается"; }
+            else if (songKey === "пломбир") { fileTarget = encodeURIComponent("Пломбир (RASA)"); displayName = "RASA - Пломбир"; }
+            else if (songKey === "любовь") { fileTarget = encodeURIComponent("Все слова о любви"); displayName = "Никита & Мария - Все слова о любви"; }
 
             currentPlaying.innerText = displayName.toUpperCase();
             ballStatus.innerText = "LIVE PLAYING";
-            bpmText.innerText = "🥁 CROWD DJ";
+            bpmText.innerText = "🥁 ФОТО СЛАЙДЕР";
             djBall.style.backgroundColor = '#06b6d4';
             djBall.style.boxShadow = '0 0 50px #00f0ff';
 
@@ -389,10 +345,9 @@ HTML_DASHBOARD = """
             }
             queueVisualList.innerHTML = "";
             queue.forEach((song, index) => {
-                let cleanName = song.endsWith(".mp3") ? song.replace(".mp3", "").replaceAll("_", " ") : song;
                 queueVisualList.innerHTML += `
                     <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                        <span class="font-bold text-white text-[11px]">${index + 1}. 🎵 ${cleanName.toUpperCase()}</span>
+                        <span class="font-bold text-white text-[11px]">${index + 1}. 🎵 ${song.toUpperCase()}</span>
                         <span class="text-[9px] text-fuchsia-400 uppercase tracking-wider font-mono">Резервте</span>
                     </div>`;
             });
