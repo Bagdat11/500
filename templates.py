@@ -6,48 +6,36 @@ HTML_CONTROLLER = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taldyk Summer - Бөлек Жіберу</title>
+    <title>Taldyk Summer - Басқару Панелі</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="h-screen bg-slate-950 text-white flex flex-col justify-between p-6 text-center select-none overflow-hidden">
     <div>
         <span class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest">Taldyk Summer • Crowd DJ</span>
         <h1 class="text-xl font-black mt-1 text-cyan-400">🔥 ИНТЕРАКТИВТІ БАСҚАРУ</h1>
-        <p class="text-xs text-gray-400 mt-1">Әнді де, суретті де бір-біріне кедергісіз бөлек жібере беріңіз!</p>
+        <p class="text-xs text-gray-400 mt-1">Әнді де, suретті де бір-біріне кедергісіз бөлек жібере беріңіз!</p>
     </div>
 
     <div class="bg-slate-900/40 border border-slate-800/60 p-3 rounded-2xl">
         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block text-left mb-2">✨ Папкадағы дайын әндер (Басыңыз):</span>
         <div class="flex flex-wrap gap-2 justify-start">
-            <button onclick="selectSong('Шашлындос')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🍖 Шашлындос</button>
-            <button onclick="selectSong('Истерика')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">😭 Истерика</button>
-            <button onclick="selectSong('Ворона')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🦅 Ворона</button>
-            <button onclick="selectSong('Твои глаза')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">👀 Твои глаза</button>
-            <button onclick="selectSong('Не получается')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">💔 Не получается</button>
-            <button onclick="selectSong('Пломбир')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🍦 Пломбир</button>
-            <button onclick="selectSong('Девочка')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">💃 Девочка</button>
-            <button onclick="selectSong('Все слова о любви')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">❤️ Слова о любви</button>
+            <button onclick="sendSong('Шашлындос')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🍖 Шашлындос</button>
+            <button onclick="sendSong('Истерика')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">😭 Истерика</button>
+            <button onclick="sendSong('Ворона')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🦅 Ворона</button>
+            <button onclick="sendSong('Твои глаза')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">👀 Твои глаза</button>
+            <button onclick="sendSong('Не получается')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">💔 Не получается</button>
+            <button onclick="sendSong('Пломбир')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">🍦 Пломбир</button>
+            <button onclick="sendSong('Девочка')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">💃 Девочка</button>
+            <button onclick="sendSong('Все слова о любви')" class="bg-slate-950 hover:bg-fuchsia-950 border border-slate-800 hover:border-fuchsia-500 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 transition-colors">❤️ Слова о любви</button>
         </div>
     </div>
 
     <div class="space-y-4 my-auto">
         <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl">
-            <h3 class="text-xs font-bold text-fuchsia-400 uppercase text-left">🎼 1. Ән таңдау:</h3>
-            <div class="flex gap-2">
-                <input type="text" id="songInput" placeholder="Жоғарыдан таңдаңыз немесе жазыңыз..." 
-                       class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fuchsia-400">
-                <button onclick="sendSong()" class="bg-fuchsia-600 hover:bg-fuchsia-700 text-black font-black px-4 rounded-xl text-xs uppercase tracking-wider">
-                    ҚОСУ
-                </button>
-            </div>
-        </div>
-
-        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-xl">
-            <h3 class="text-xs font-bold text-cyan-400 uppercase text-left">📸 2. Залдан Селфи (Фото):</h3>
+            <h3 class="text-xs font-bold text-cyan-400 uppercase text-left">📸 Залдан Селфи (Фото):</h3>
             <div class="flex flex-col gap-2">
-                <input type="file" id="photoInput" accept="image/*"
-                       class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs text-gray-400 focus:outline-none">
-                <button onclick="sendPhoto()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-black py-2 rounded-xl text-xs uppercase tracking-wider">
+                <input type="file" id="photoInput" accept="image/*" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs text-gray-400 focus:outline-none">
+                <button onclick="sendPhoto()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-black py-2.5 rounded-xl text-xs uppercase tracking-wider transition-colors">
                     📸 ЭКРАНҒА СУРЕТТІ ҰШЫРУ
                 </button>
             </div>
@@ -55,27 +43,19 @@ HTML_CONTROLLER = """
     </div>
 
     <div class="bg-black/30 p-2 rounded-xl border border-white/5">
-        <div class="text-emerald-400 text-[10px] font-bold">ЖҮЙЕ ДАЙЫН СЕРВЕР ТІРІ 🌐</div>
+        <div class="text-emerald-400 text-[10px] font-bold">ЖҮЙЕ ДАЙЫН • СЕРВЕР ТІРІ 🌐</div>
     </div>
 
     <script>
-        function selectSong(songName) {
-            document.getElementById('songInput').value = songName;
-        }
-
-        async function sendSong() {
-            const songInput = document.getElementById('songInput');
-            if(!songInput.value.trim()) return alert("Ән атын жазыңыз!");
-
+        async function sendSong(songName) {
             try {
                 const formData = new FormData();
-                formData.append('title', songInput.value.trim());
+                formData.append('title', songName);
 
                 const response = await fetch('/vote', { method: 'POST', body: formData });
                 const result = await response.json();
                 if(result.status === "success") {
-                    alert(`"${songInput.value}" кезекке резервке қосылды! 🎵`);
-                    songInput.value = '';
+                    alert(`"${songName}" кезекке сәтті қосылды! 🎵`);
                 }
             } catch (error) { alert("Сервер жауап бермеді."); }
         }
@@ -132,7 +112,7 @@ HTML_DASHBOARD = """
         <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-3xl space-y-4">
             <h2 class="text-sm font-black text-fuchsia-400 tracking-wider uppercase border-b border-slate-800 pb-2">📋 АЛДАҒЫ РЕЗЕРВ КЕЗЕГІ:</h2>
             <div id="queueVisualList" class="space-y-2 text-xs h-40 overflow-y-auto">
-                <p class="text-gray-500 text-center py-4">Резерв бос. Сөз жазыңыз... 🎼</p>
+                <p class="text-gray-500 text-center py-4">Резерв бос. Ән таңдаңыз... 🎼</p>
             </div>
         </div>
 
@@ -184,7 +164,6 @@ HTML_DASHBOARD = """
         const ballStatus = document.getElementById('ballStatus');
         const bpmText = document.getElementById('bpmText');
         const audioPlayer = document.getElementById('localAudioPlayer');
-        const totalVotesCount = document.getElementById('totalVotesCount');
         const liveImageDisplay = document.getElementById('liveImageDisplay');
         const noPhotoText = document.getElementById('noPhotoText');
 
@@ -215,9 +194,7 @@ HTML_DASHBOARD = """
                 if (!isPlaying && data.queue.length > 0) {
                     startNextFromQueue();
                 }
-            } catch (e) {
-                console.log("Дерек алу қатесі");
-            }
+            } catch (e) { console.log("Дерек алу қатесі"); }
         }
         setInterval(fetchVotes, 1000);
 
@@ -255,9 +232,7 @@ HTML_DASHBOARD = """
                 } else {
                     isPlaying = false;
                 }
-            } catch(err) {
-                isPlaying = false;
-            }
+            } catch(err) { isPlaying = false; }
         }
 
         document.addEventListener('keydown', function(event) {
@@ -309,9 +284,7 @@ HTML_DASHBOARD = """
 
             let playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    console.log("Ойнап жатыр");
-                }).catch(error => {
+                playPromise.then(_ => {}).catch(error => {
                     isPlaying = false;
                     skipTrack(); 
                 });
@@ -340,7 +313,7 @@ HTML_DASHBOARD = """
 
         function updateQueueUI(queue) {
             if (queue.length === 0) {
-                queueVisualList.innerHTML = `<p class="text-gray-500 text-center py-4">Резерв бос. Сөз жазыңыз... 🎼</p>`;
+                queueVisualList.innerHTML = `<p class="text-gray-500 text-center py-4">Резерв бос. Ән таңдаңыз... 🎼</p>`;
                 return;
             }
             queueVisualList.innerHTML = "";
