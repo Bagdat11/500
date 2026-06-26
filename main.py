@@ -1,16 +1,14 @@
 # main.py
-import base64
-import io
-import os
 from fastapi import FastAPI, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from PIL import Image  # Суретті кішірейту үшін (Render-ді құтқару)
+import os
+import base64
 from templates import HTML_DASHBOARD, HTML_CONTROLLER
 
 app = FastAPI()
 
-# static папкасын қосу
+# "static" папкасын тіркеу
 if not os.path.exists("static"):
     os.makedirs("static")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -19,14 +17,7 @@ live_queue = {
     "queue": [],
     "total_clicks": 0,
     "photos": [],
-    "истерика": 0,
-    "девочка": 0,
-    "ворона": 0,
-    "глаза": 0,
-    "любовь": 0,
-    "ню": 0,
-    "пломбир": 0,
-    "шашлындос": 0,
+    "истерика": 0, "девочка": 0, "ворона": 0, "глаза": 0, "любовь": 0, "ню": 0, "пломбир": 0, "шашлындос": 0
 }
 
 
@@ -40,33 +31,25 @@ def get_controller():
     return HTMLResponse(content=HTML_CONTROLLER)
 
 
-# 📱 Ән мен Фотоны қабылдау API-і
+# 📱 Ән мен Фотоны бірге де, бөлек де қабылдайтын СЕНІҢ ТАЗА АПИ-ІҢ
 @app.post("/vote")
 async def text_vote(title: str = Form(None), photo: UploadFile = File(None)):
-    # 1. Егер фото жіберілсе, оны сығып, RAM-ға сақтаймыз
+    # 1. Егер фото жіберілсе, оны бірден RAM-ға сақтаймыз (Сенің жазған кодың)
     if photo:
         try:
             contents = await photo.read()
-            image = Image.open(io.BytesIO(contents))
-
-            # 🛠️ СУРЕТТІ СЫҒУ (Render жады толмауы үшін сапасын 40%-ға түсіреміз)
-            image.thumbnail((800, 800))
-            output = io.BytesIO()
-            image.convert("RGB").save(output, format="JPEG", quality=40)
-            compressed_contents = output.getvalue()
-
-            encoded = base64.b64encode(compressed_contents).decode("utf-8")
-            base64_url = f"data:image/jpeg;base64,{encoded}"
-
+            encoded = base64.b64encode(contents).decode("utf-8")
+            mime_type = photo.content_type or "image/jpeg"
+            base64_url = f"data:{mime_type};base64,{encoded}"
             live_queue["photos"].append(base64_url)
 
-            # Экранда ең соңғы 15 сурет қана айналып тұрады
+            # Слайдерде сурет көп болса, ескісін өшіру
             if len(live_queue["photos"]) > 15:
                 live_queue["photos"].pop(0)
         except Exception as e:
             print("Сурет өңдеу қатесі:", e)
 
-    # 2. Егер дайын әндер таңдалса, оны кезекке тұрғызамыз
+    # 2. Егер ән аты жазылса, оны кезекке тұрғызамыз
     if title and title.strip() != "":
         clean_title = title.lower().strip()
         final_key = "шашлындос"
@@ -92,21 +75,13 @@ async def text_vote(title: str = Form(None), photo: UploadFile = File(None)):
         live_queue["total_clicks"] += 1
         live_queue[final_key] += 1
 
-        return JSONResponse(
-            content={
-                "status": "success",
-                "type": "song_added",
-                "matched": final_key,
-            }
-        )
+        return JSONResponse(content={"status": "success", "type": "song_added", "matched": final_key})
 
     # Тек фото кеткен кездегі жауап
     if photo:
         return JSONResponse(content={"status": "success", "type": "photo_added"})
 
-    return JSONResponse(
-        content={"status": "error", "message": "Ештеңе жіберілеген жоқ"}
-    )
+    return JSONResponse(content={"status": "error", "message": "Ештеңе жіберілеген жоқ"})
 
 
 @app.get("/get_votes")
